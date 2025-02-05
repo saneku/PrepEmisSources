@@ -23,14 +23,14 @@ if __name__ == "__main__":
     volc_qv_emis_0=[150.0] #Mt
     '''
 
-    start_time = datetime.datetime(2016, 1, 1, 0, 0)
-    end_time = datetime.datetime(2016, 1, 1, 0, 40)
+    start_time = datetime.datetime(1991, 6, 15, 0, 0)
+    end_time = datetime.datetime(1991, 6, 15, 10, 0)
 
 
     netcdf_handler = NetCDFHandler(source_dir="./")
     print(netcdf_handler)
     #def prepare_file(self,start_time,interval_days,interval_hours,interval_mins):
-    netcdf_handler.prepare_file(start_time,end_time,interval_days=0,interval_hours=0,interval_mins=10)
+    netcdf_handler.prepare_file(start_time,end_time,interval_days=0,interval_hours=0,interval_mins=60)
     exit()
     
     

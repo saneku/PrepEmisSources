@@ -24,7 +24,7 @@ def  findClosetGridPoint(lats, lons, la,lo):
                 ii=i
     return ii,jj,dist0
 
-
+'''
 def add3dVar(wrf_file,var_name,caption,units):
     wrf_file.createVariable(var_name, 'f4', ('Time','bottom_top','south_north', 'west_east'))
     wrf_file.variables[var_name].FieldType=104
@@ -54,8 +54,10 @@ def add2dVar(wrf_file,var_name,caption,units):
 
 
 orgn_dir='/scratch/ukhova/SandBox/WRF/run_pinatubo_3month/'
+'''
+orgn_dir='../'
 orgn_wrf_input_file="wrfinput_d01"
-dst_file="wrfchemv_d01"
+#dst_file="wrfchemv_d01"
 
 
 #===========================================
@@ -79,7 +81,7 @@ Z = Z + dz*0.5
 Z = Z/1000.0
 
 wrfinput.close()
-
+'''
 #===========================================
 if os.path.exists(f'{orgn_dir}{dst_file}'):
     os.system(f'rm {orgn_dir}{dst_file}')
@@ -89,8 +91,11 @@ ds_var = ds[['PH','PHB','T','Times']]
 ds_var.to_netcdf(f'{orgn_dir}{dst_file}')
 #OR os.system(f'ncks -v ALB,Times {orgn_dir}{orgn_wrf_input_file} {orgn_dir}{dst_file}')
 #===========================================
+'''
 
+dst_file="wrfchemv_d01"
 wrf_volc_file = Dataset(f'{orgn_dir}{dst_file}','r+')
+'''
 add2dVar(wrf_volc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
 add2dVar(wrf_volc_file,"ERUP_END","END TIME OF ERUPTION","?")
 add3dVar(wrf_volc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")
@@ -99,6 +104,7 @@ add3dVar(wrf_volc_file,"E_QV","Volcanic Emissions, QV","kg/m2/s")
 
 for i in range(1,11):
     add3dVar(wrf_volc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
+'''
 
 #wrf_volc_file.close()
 
@@ -147,23 +153,26 @@ dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
 print (DataFrame(dustfrc_goc10bin_ln))
 
 #one_day_in_seconds=86400                   #1 day = 86400 sec
-volc_lats=[15.150110]
-volc_lons=[120.346512]
+volc_lats=[7.72, 9.12, 18.55, 17.72, 18.38, 18.67, 6.95, 13.94, 17.84, 7.20]#[15.150110]
+volc_lons=[117.26, 102.01, 105.30, 81.81, 87.85, 82.28, 113.72, 79.87, 103.24, 99.12]#[120.346512]
 
-start_year=[1991]
-start_month=[6]
-start_day=[15]
-start_hour=[10]                                  #eruption start hour
+start_year=10*[1991]
+start_month=10*[6]
+start_day=10*[15]
+start_hour=[0,1,2,3,4,5,6,7,8,9]                                  #eruption start hour
 
 #erup_start = datetime.datetime(1991, 6, 15, 1, 41)
 #erup_dur_sec=[(14.0/24.0)*one_day_in_seconds]    #eruption duration in seconds
 
-erup_dt=[600]    #eruption duration in minutes
+erup_dt=10*[60]    #eruption duration in minutes
+print("--------------------------")
+print (f"Set auxinput13_interval_m to {erup_dt[0]}")
+print("--------------------------")
 
-volc_ash_emis_0=[60.0] #Mt
-volc_so2_emis_0=[15.0] #Mt
-volc_sulf_emis_0=[0.0] #Mt
-volc_qv_emis_0=[150.0] #Mt
+volc_ash_emis_0=10*[6.0] #Mt
+volc_so2_emis_0=10*[1.50] #Mt
+volc_sulf_emis_0=10*[0.0001] #Mt
+volc_qv_emis_0=10*[15.0] #Mt
 
 #TODO: remove
 # Roll the array by 10 elements to the left
@@ -219,21 +228,21 @@ for i,lat in enumerate(volc_lats):
     #Ash emission in Mt/column. Need to make it in "ug/m2/s"
     for m in range(0,ndust):
         for n in range(0,nbin_o):
-            wrf_volc_file.variables[f"E_VASH{n+1}"][0,:,y,x] += 1e18 * (dustfrc_goc10bin_ln[m,n] * gocart_fractions[m]) * ash_interp / (60 * erup_dt[i] * surface[y,x])
+            wrf_volc_file.variables[f"E_VASH{n+1}"][i,:,y,x] += 1e18 * (dustfrc_goc10bin_ln[m,n] * gocart_fractions[m]) * ash_interp / (60 * erup_dt[i] * surface[y,x])
             #print(f"E_VASH{n+1}")
     
     #SO2 emission in Mt/column. Need to make it in "ug/m2/min"
-    wrf_volc_file.variables['E_VSO2'][0,:,y,x] += 1e18 * so2_interp / (erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_VSO2'][i,:,y,x] += 1e18 * so2_interp / (erup_dt[i] * surface[y,x])
 
     #SULF emission in Mt/column. Need to make it in "ug/m2/min"
-    wrf_volc_file.variables['E_VSULF'][0,:,y,x] += 1e18 * sulf_interp / (erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_VSULF'][i,:,y,x] += 1e18 * sulf_interp / (erup_dt[i] * surface[y,x])
 
     #QV (water vapor) emission in Mt/column. Need to make it in "kg/m2/sec"
     #for now redistibute QV at the top of the domain. todo make suzuki!!!
-    wrf_volc_file.variables['E_QV'][0,49,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
-    wrf_volc_file.variables['E_QV'][0,48,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
-    wrf_volc_file.variables['E_QV'][0,47,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
-    wrf_volc_file.variables['E_QV'][0,46,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_QV'][i,49,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_QV'][i,48,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_QV'][i,47,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
+    wrf_volc_file.variables['E_QV'][i,46,y,x] = 1e9 * (0.25 * volc_qv_emis_0[i]) / (60 * erup_dt[i] * surface[y,x])
     
     if calendar.isleap(start_year[i]):
         K = 1
@@ -244,8 +253,8 @@ for i,lat in enumerate(volc_lats):
     beg_jul = int(beg_jul)
     erup_beg = beg_jul * 1000. + start_hour[i]
 
-    wrf_volc_file.variables['ERUP_BEG'][0,y,x] = erup_beg
-    wrf_volc_file.variables['ERUP_END'][0,y,x] = erup_dt[i]
+    wrf_volc_file.variables['ERUP_BEG'][i,y,x] = erup_beg
+    wrf_volc_file.variables['ERUP_END'][i,y,x] = erup_dt[i]
     
 wrf_volc_file.close()
 print ("DONE")
