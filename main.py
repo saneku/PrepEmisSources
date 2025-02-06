@@ -1,11 +1,27 @@
 from emissions.types import AshEmission, SO2Emission, SulfateEmission, WaterVaporEmission
 from profiles.types import UniformProfile, SuzukiProfile, InvertedProfile
-from core.eruption import Eruption
+#from core.eruption import Eruption, InvertedPinatuboEruption
 from core.netcdf_handler import NetCDFHandler
 from core.writer import EmissionWriter
+import numpy as np
+from core.emission_scenario import EmissionScenario_InvertedPinatubo
+
 import datetime
 
 if __name__ == "__main__":
+    
+    #src_data=InvertedPinatuboEruption('./example_profiles/ash_2d_emission_profiles')
+    #src_data.read_eruption_file()
+    
+    
+    scenario = EmissionScenario_InvertedPinatubo('./example_profiles/ash_2d_emission_profiles')
+    scenario.interpolate_on_time(np.arange(2, 16)) # interpoloate to new time points
+
+    #scenario = EmissionScenario()
+    #scenario.add_profile(InvertedProfile(heights_on_levels))
+
+    print(scenario)  # Output: EmissionScenario(profiles=['UniformProfile'])
+    
     '''
     emissions = [
         AshEmission(mean=50, stddev=10, location="A", amount=100, duration=5, start_time="12:00"),
