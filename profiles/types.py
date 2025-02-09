@@ -1,14 +1,14 @@
 import numpy as np
-from .base import VerticalProfileDistribution
+from .base import VerticalProfile
 
-class UniformProfile(VerticalProfileDistribution):
+class UniformProfile(VerticalProfile):
     def generate_profile(self, height_levels):
         return np.ones(height_levels) / height_levels
 
-class SuzukiProfile(VerticalProfileDistribution):
+class VerticalProfile_Suzuki(VerticalProfile):
     def generate_profile(self, height_levels):
         return np.exp(-np.linspace(0, 1, height_levels))
 
-class InvertedProfile(VerticalProfileDistribution):
+class VerticalProfile_Simple(VerticalProfile):
     def generate_profile(self, height_levels):
         return np.flip(np.linspace(0, 1, height_levels))

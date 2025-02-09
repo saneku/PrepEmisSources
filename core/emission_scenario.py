@@ -1,33 +1,85 @@
 from abc import ABC, abstractmethod
 import pickle
 import numpy as np
-from profiles.base import VerticalProfileDistribution
-from profiles.types import InvertedProfile
+from profiles.base import VerticalProfile
+from profiles.types import VerticalProfile_Simple
 import math
 from scipy.interpolate import interp1d
+from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 
 class EmissionScenario(ABC):
     def __init__(self):
         self.profiles = []
 
-    def add_profile(self, profile: VerticalProfileDistribution):
-        if isinstance(profile, VerticalProfileDistribution):
+    def add_profile(self, profile: VerticalProfile):
+        if isinstance(profile, VerticalProfile):
             self.profiles.append(profile)
         else:
             raise TypeError("Profile must be an instance of VerticalProfileDistribution")
 
-    def list_profiles(self):
+    def __list_profiles(self):
+        
+        heights_on_levels=self.profiles[0].h
+        scenario_2d_array=np.array([profile.values for profile in self.profiles]).T
+        
+        for j in np.arange(len(heights_on_levels)-1,-1,-1):
+	        self.__print_vector(scenario_2d_array[j,:],sep=' ',f='{:0.6e}')
+        
         return [profile.__class__.__name__ for profile in self.profiles]
 
+    def _clear_profiles(self):
+        self.profiles = []
+
     def __repr__(self):
-        return f"EmissionScenario(profiles={self.list_profiles()})"
+        return f"EmissionScenario(profiles={self.__list_profiles()})"
     
+    def _generate_dates(self,start_year, start_month, start_day, hours_list):
+        start_date = datetime(start_year, start_month, start_day)
+        years, months, days = [], [], []
+        for hours in hours_list:
+            new_date = start_date + timedelta(hours=hours)
+            years.append(new_date.year)
+            months.append(new_date.month)
+            days.append(new_date.day)
+        
+        return years, months, days
+    
+    def __print_vector(self,vector,sep=' ',f="{:0.6e}"):
+        print((sep.join(f.format(x) for x in vector)))
+
+    def plot(self,*args, **kwargs):
+        scale_factor=2000.0#*1000.0
+        hours=[profile.hour for profile in self.profiles]
+        fig = plt.figure(figsize=(18,7))
+        for i, profile in enumerate(self.profiles):
+            x_values = scale_factor * profile.values + profile.hour
+            y_values = profile.h / 1000.0
+            plt.plot(x_values, y_values, *args, **kwargs)
+            
+        plt.ylim(0.0, 40)
+        #plt.xlim(0.0,0.03)
+        plt.ylabel('Altitude, $km$')#,fontsize=CB_LABEL_TEXT_SIZE)
+        plt.xlabel('Decimal hour')#,fontsize=CB_LABEL_TEXT_SIZE)
+        #plt.yticks(fontsize=TICKS_TEXT_SIZE)
+        #plt.xticks(fontsize=TICKS_TEXT_SIZE)
+
+        plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
+        plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
+        plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
+        plt.xticks(hours)  # Set text labels.
+
+        plt.title(f'Start time: {self.profiles[0].year}-{self.profiles[0].month}-{self.profiles[0].day} {self.profiles[0].hour}')
+        
+        plt.grid(True,alpha=0.3)
+        plt.show()
+
         
 class EmissionScenario_InvertedPinatubo(EmissionScenario):
     def __init__(self, filename):
         super().__init__()
         
-        levels_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
+        staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
                             1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
                             8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
                             16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
@@ -35,39 +87,54 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
                             32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
                             42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
 
-        levels_dz = np.array([63.175426, 91.43107, 118.734634, 147.80225, 187.56696, 239.29309, 284.36438, 455.2445, 475.54382,
-                            498.32178, 523.72925, 978.5652, 979.1826, 983.8462, 987.20654, 989.1084, 990.10547, 987.9502, 
-                            985.78906, 983.8467, 982.3076, 982.7627, 956.8447, 921.22656, 892.2383, 886.86523, 901.53516, 
-                            927.8633, 954.28516, 978.0176, 991.2637, 1000.9336, 1007.02734, 1013.9199, 1020.8633, 1029.0273, 
-                            1039.1582, 1049.8066, 1060.9609, 1072.5605, 1083.0996, 1093.5547, 1103.9102, 1114.1641, 1124.3047, 
-                            1134.3281, 1144.2188, 1153.9766, 1163.5742, 1173.0039, 1182.2344, 1191.2656, 1200.0508, 1208.5625])
-
         with open(filename,'rb') as infile:
             _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-            #or _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile)
 
         for i in range(emission_scenario.shape[1]):
-            self.add_profile(InvertedProfile(levels_h,emission_scenario[:,i],years[i],
+            self.add_profile(VerticalProfile_Simple(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))
 
 
-    def interpolate_on_time(self,time_interp):#, profile, time):
-        #print(self.profiles)
+    def adjust_time(self):
         
         hours=[profile.hour for profile in self.profiles]
-        scenario_2d_array=np.array([profile.values for profile in self.profiles]).T
-            
-        interp_solution_emission_scenario = np.array([interp1d(hours, scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(time_interp) for j in range(scenario_2d_array.shape[0])])
-        #print (interp_solution_emission_scenario)
-
-        new_hours = list(range(math.ceil(hours[0]),math.ceil(hours[-1])+1))
+        durations_hours=[profile.duration_sec/3600 for profile in self.profiles]
+        
+        if (math.ceil(hours[-1]) > (hours[-1] + durations_hours[-1])):
+            end_hour = math.ceil(hours[-1])-1
+        else:
+            end_hour =  math.ceil(hours[-1])
+        
+        new_hours = list(range(math.ceil(hours[0]),end_hour))
         new_hours.insert(0, hours[0])  # Insert at 2nd index
+        new_hours.append(end_hour)
+        new_duration_hours=list(np.diff(new_hours))
+        new_duration_hours.append((hours[-1] + durations_hours[-1])-end_hour)
         
-        new_duration=[np.diff(new_hours)]
+        #interpolate the emission scenario into the new time points
+        scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
+        interp_solution_emission_scenario = np.array(
+            [np.maximum(interp1d(hours, scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
+            for j in range(scenario_2d_array.shape[0])])
         
-        #interp_solution_emission_scenario = np.array([interp1d(self.profiles[:].hour
-        #                                                       solution_hour, solution_emission_scenario[j, :], kind='linear', fill_value="extrapolate")(time_interp) for j in range(solution_emission_scenario.shape[0])])
+        
+        levels_h = self.profiles[0].h        
+        new_years, new_months, new_days = self._generate_dates(self.profiles[0].year, self.profiles[0].month, self.profiles[0].day, new_hours)
+        self._clear_profiles()
+        
+        for i in range(interp_solution_emission_scenario.shape[1]):
+            self.add_profile(VerticalProfile_Simple(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
+                                new_months[i],new_days[i],new_hours[i],new_duration_hours[i]*3600))
 
+    def adjust_height(self,new_height):
+        
+        if(np.all(new_height[1:] > new_height[:-1])==False):
+            raise ValueError('new_height must be monotonically increasing')
+        
+        for profile in self.profiles:
+            profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
+            profile.h=new_height
+        
     '''
     def read_eruption_file(self, filename):
         # Read the file
