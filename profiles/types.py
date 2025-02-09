@@ -1,7 +1,7 @@
 import numpy as np
 from .base import VerticalProfile
 
-class UniformProfile(VerticalProfile):
+class VerticalProfile_Uniform(VerticalProfile):
     def generate_profile(self, height_levels):
         return np.ones(height_levels) / height_levels
 

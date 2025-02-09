@@ -1,5 +1,5 @@
-from emissions.types import AshEmission, SO2Emission, SulfateEmission, WaterVaporEmission
-from profiles.types import UniformProfile, VerticalProfile_Suzuki, VerticalProfile_Simple
+from emissions.base import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
+from profiles.types import VerticalProfile_Uniform, VerticalProfile_Suzuki, VerticalProfile_Simple
 #from core.eruption import Eruption, InvertedPinatuboEruption
 from core.netcdf_handler import NetCDFHandler
 from core.writer import EmissionWriter
@@ -10,6 +10,7 @@ import datetime
 
 if __name__ == "__main__":
     
+    '''
     scenario = EmissionScenario_InvertedPinatubo('./example_profiles/ash_2d_emission_profiles')
     #scenario.plot(linestyle='--', color='grey', marker='')
     #print ("BEFORE")
@@ -27,25 +28,14 @@ if __name__ == "__main__":
     scenario.plot(linestyle='-', color='blue', marker='+')
     exit()
     '''
+    
     emissions = [
-        AshEmission(mean=50, stddev=10, location="A", amount=100, duration=5, start_time="12:00"),
-        SO2Emission(mean=10, stddev=0.5, location="B", amount=200, duration=10, start_time="14:00"),
-        SulfateEmission(mean=2, stddev=1, location="C", amount=150, duration=7, start_time="16:00"),
-        WaterVaporEmission(mean=30, stddev=5, location="D", amount=50, duration=3, start_time="18:00")
-    ]
-
-
-    erup_duration=[600]    #minutes
-
-    volc_ash_emis_0=[60.0] #Mt
-    volc_so2_emis_0=[15.0] #Mt
-    volc_sulf_emis_0=[0.0] #Mt
-    volc_qv_emis_0=[150.0] #Mt
-    '''
-
-    start_time = datetime.datetime(1991, 6, 15, 0, 0)
-    end_time = datetime.datetime(1991, 6, 15, 10, 0)
-
+                Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8),
+                Emission_SO2(mass_mt=15,lat=15,lon=165),
+                Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
+                Emission_WaterVapor(mass_mt=150,lat=15,lon=165)
+                ]
+    exit()
 
     netcdf_handler = NetCDFHandler(source_dir="./")
     print(netcdf_handler)

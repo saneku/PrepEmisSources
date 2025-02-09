@@ -1,4 +1,4 @@
 from .base import VerticalProfile
-from .types import UniformProfile, VerticalProfile_Suzuki, VerticalProfile_Simple
+from .types import VerticalProfile_Uniform, VerticalProfile_Suzuki, VerticalProfile_Simple
 
-__all__ = ["VerticalProfileDistribution", "UniformProfile", "SuzukiProfile", "InvertedProfile"]
+__all__ = ["VerticalProfile_Uniform", "VerticalProfile_Suzuki", "VerticalProfile_Simple"]

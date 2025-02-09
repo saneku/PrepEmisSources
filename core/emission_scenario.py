@@ -96,32 +96,39 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
 
 
     def adjust_time(self):
-        
+        # Extract hours and durations in hours from profiles
         hours=[profile.hour for profile in self.profiles]
         durations_hours=[profile.duration_sec/3600 for profile in self.profiles]
         
+        # Determine the end hour for the new time points
         if (math.ceil(hours[-1]) > (hours[-1] + durations_hours[-1])):
             end_hour = math.ceil(hours[-1])-1
         else:
             end_hour =  math.ceil(hours[-1])
         
+        # Generate new hours list with the start and end hours    
         new_hours = list(range(math.ceil(hours[0]),end_hour))
         new_hours.insert(0, hours[0])  # Insert at 2nd index
-        new_hours.append(end_hour)
+        new_hours.append(end_hour)  # Append the end hour at the end
+        
+        # Calculate new durations in hours
         new_duration_hours=list(np.diff(new_hours))
         new_duration_hours.append((hours[-1] + durations_hours[-1])-end_hour)
         
-        #interpolate the emission scenario into the new time points
+        # Interpolate the emission scenario into the new time points
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
         interp_solution_emission_scenario = np.array(
             [np.maximum(interp1d(hours, scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
             for j in range(scenario_2d_array.shape[0])])
         
-        
-        levels_h = self.profiles[0].h        
+        #Generate new dates based on the new hours
+        levels_h = self.profiles[0].h     
         new_years, new_months, new_days = self._generate_dates(self.profiles[0].year, self.profiles[0].month, self.profiles[0].day, new_hours)
+        
+        # Clear existing profiles
         self._clear_profiles()
         
+        # Add new profiles with interpolated values and new time points
         for i in range(interp_solution_emission_scenario.shape[1]):
             self.add_profile(VerticalProfile_Simple(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
                                 new_months[i],new_days[i],new_hours[i],new_duration_hours[i]*3600))
