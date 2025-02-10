@@ -13,7 +13,8 @@ if __name__ == "__main__":
     #todo: add arbitaty time intervals
     
     #ash=Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8)
-    ash_scenario = EmissionScenario_InvertedPinatubo('./example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles')
+    ash_scenario = EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8),
+                                                    './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles')
     #scenario.plot(linestyle='--', color='grey', marker='')
     #print ("BEFORE")
     
@@ -27,7 +28,8 @@ if __name__ == "__main__":
     #h = h[::8]
         
     #so2=Emission_SO2(mass_mt=15,lat=15,lon=165)
-    so2_scenario = EmissionScenario_InvertedPinatubo('./example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
+    so2_scenario = EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15,lat=15,lon=165),
+                                                     './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
     
     
     scenarios = [
@@ -42,7 +44,7 @@ if __name__ == "__main__":
     netcdf_handler = NetCDFHandler(source_dir="./")
     #print(netcdf_handler)
     
-    emission_writer = EmissionWriter(scenarios, netcdf_handler)
-    emission_writer.write_emissions()
+    emission_writer = EmissionWriter(scenarios, netcdf_handler, 60)
+    emission_writer.write_to_file()
    
     exit()

@@ -9,12 +9,17 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 class EmissionScenario():
-    def __init__(self):
+    def __init__(self,type_of_emission):
         self.profiles = []
-        self.__is_divided_by_dz = False
-        self.__is_normalized = False
+        self.__is_divided_by_dh = False
+        self.__is_normalized_by_total_mass = False
         self.__is_height_adjusted = False
         self.__is_time_adjusted = False
+
+        if (isinstance(type_of_emission, Emission) == False):
+            raise TypeError("type_of_emission must be an instance of Emission")
+        else:
+            self.type_of_emission = type_of_emission
 
     def add_profile(self, profile: VerticalProfile):
         if isinstance(profile, VerticalProfile):
@@ -23,7 +28,6 @@ class EmissionScenario():
             raise TypeError("Profile must be an instance of VerticalProfile")
 
     def __list_profiles(self):
-        
         heights_on_levels=self.profiles[0].h
         scenario_2d_array=np.array([profile.values for profile in self.profiles]).T
         
@@ -98,8 +102,8 @@ class EmissionScenario():
 
         
 class EmissionScenario_InvertedPinatubo(EmissionScenario):
-    def __init__(self, filename):
-        super().__init__()
+    def __init__(self, type_of_emission, filename):
+        super().__init__(type_of_emission)
         
         staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
                             1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
