@@ -13,7 +13,34 @@ class NetCDFHandler:
         self.orgn_wrf_input_file="wrfinput_d01"
         self.dst_file="wrfchemv_d01"
 
-        #===========================================
+    def __str__(self):
+        return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.Z.shape})"
+
+    def prepare_file(self,start_time,end_time,interval_days,interval_hours,interval_mins=60):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}', 'a') as dataset:
+            #days=range(0,366)
+            time_range = pd.date_range(start=start_time, end=end_time, 
+                           freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
+
+            aux_times = np.chararray((len(time_range), 19), itemsize=1)
+            
+            for i, aux_date in enumerate(time_range):
+                #aux_date = start_time + datetime.timedelta(days=interval_days,hours=interval_hours,minutes=interval_mins)
+                aux_times[i] = list(aux_date.strftime("%Y-%m-%d_%H:%M:%S"))
+            dataset.variables['Times'][:] = aux_times
+            
+            # Loop through all variables and create a new times
+            for var_name in dataset.variables:
+                if var_name == 'Times':
+                    continue
+                var = dataset.variables[var_name]
+                if 'Time' in var.dimensions:
+                    print(var)
+                    for i,_ in enumerate(aux_times):
+                        var[i,:]=var[0,:]
+    
+
+        #TODO: HERE!!!
         #Read wrfinput data
         print (f'Open {self.source_dir}{self.orgn_wrf_input_file}')
         with nc.Dataset(f'{self.source_dir}{self.orgn_wrf_input_file}','r') as wrfinput:
@@ -54,47 +81,8 @@ class NetCDFHandler:
             for i in range(1,11):
                 self.__add3dVar(wrf_volc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
 
-    def __str__(self):
-        return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.Z.shape})"
-
-    '''
-    def write_data(self, emissions):
-        with nc.Dataset(self.destination_file, 'w', format='NETCDF4') as dataset:
-            dataset.createDimension('emission', len(emissions))
-            
-            locations = dataset.createVariable('location', str, ('emission',))
-            amounts = dataset.createVariable('amount', 'f4', ('emission',))
-            durations = dataset.createVariable('duration', 'f4', ('emission',))
-            start_times = dataset.createVariable('start_time', str, ('emission',))
-            
-            locations[:] = [e.location for e in emissions]
-            amounts[:] = [e.amount for e in emissions]
-            durations[:] = [e.duration for e in emissions]
-            start_times[:] = [e.start_time for e in emissions]
-    '''
+        #todo: add record to netcdf file about this utility
     
-    def prepare_file(self,start_time,end_time,interval_days,interval_hours,interval_mins=60):
-        with nc.Dataset(f'{self.source_dir}{self.dst_file}', 'a') as dataset:
-            #days=range(0,366)
-            time_range = pd.date_range(start=start_time, end=end_time, 
-                           freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
-
-            aux_times = np.chararray((len(time_range), 19), itemsize=1)
-            
-            for i, aux_date in enumerate(time_range):
-                #aux_date = start_time + datetime.timedelta(days=interval_days,hours=interval_hours,minutes=interval_mins)
-                aux_times[i] = list(aux_date.strftime("%Y-%m-%d_%H:%M:%S"))
-            dataset.variables['Times'][:] = aux_times
-            
-            # Loop through all variables and create a new times
-            for var_name in dataset.variables:
-                if var_name == 'Times':
-                    continue
-                var = dataset.variables[var_name]
-                if 'Time' in var.dimensions:
-                    print(var)
-                    for i,_ in enumerate(aux_times):
-                        var[i,:]=var[0,:]
     
     def __add3dVar(self,wrf_file,var_name,caption,units):
         wrf_file.createVariable(var_name, 'f4', ('Time','bottom_top','south_north', 'west_east'))
@@ -123,7 +111,7 @@ class NetCDFHandler:
         print (f"Adding {var_name} {caption} {units} into {wrf_file}")
         
     
-    def  findClosetGridPoint(self, lat, lon):
+    def __findClosetGridPoint(self, lat, lon):
         nrow=len(self.xlat)
         ncol=len(self.xlon[0])
         dist0=1000.0

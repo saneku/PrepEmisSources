@@ -12,6 +12,9 @@ class EmissionScenario():
     def __init__(self):
         self.profiles = []
         self.__is_divided_by_dz = False
+        self.__is_normalized = False
+        self.__is_height_adjusted = False
+        self.__is_time_adjusted = False
 
     def add_profile(self, profile: VerticalProfile):
         if isinstance(profile, VerticalProfile):
@@ -154,6 +157,8 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
             self.add_profile(VerticalProfile(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
                                 new_months[i],new_days[i],new_hours[i],new_duration_hours[i]*3600))
 
+        self.__is_time_adjusted = True
+
     def adjust_height(self,new_height):
         
         if(np.all(new_height[1:] > new_height[:-1])==False):
@@ -162,6 +167,8 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
         for profile in self.profiles:
             profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
             profile.h=new_height
+        
+        self.__is_height_adjusted = True
         
     '''
     def read_eruption_file(self, filename):
