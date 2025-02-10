@@ -1,22 +1,23 @@
-from abc import ABC, abstractmethod
+#from abc import ABC, abstractmethod
 import pickle
 import numpy as np
 from profiles.base import VerticalProfile
-from profiles.types import VerticalProfile_Simple
+#from profiles.types import VerticalProfile_Simple
 import math
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
-class EmissionScenario(ABC):
+class EmissionScenario():
     def __init__(self):
         self.profiles = []
+        self.__is_divided_by_dz = False
 
     def add_profile(self, profile: VerticalProfile):
         if isinstance(profile, VerticalProfile):
             self.profiles.append(profile)
         else:
-            raise TypeError("Profile must be an instance of VerticalProfileDistribution")
+            raise TypeError("Profile must be an instance of VerticalProfile")
 
     def __list_profiles(self):
         
@@ -48,6 +49,23 @@ class EmissionScenario(ABC):
     def __print_vector(self,vector,sep=' ',f="{:0.6e}"):
         print((sep.join(f.format(x) for x in vector)))
 
+    def getStartDateTime(self):
+        return datetime(int(self.profiles[0].year), int(self.profiles[0].month), int(self.profiles[0].day), int(self.profiles[0].hour))
+    
+    def getEndDateTime(self):
+        return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
+    
+    #def getInterval(self):
+    #    return self.profiles[-1].duration_sec/3600
+
+    def getTotalEmittedMass(self):
+        if (self.__is_divided_by_dz):
+            return 1
+            #todo
+            #return sum([(profile.values * profile.duration).sum() * profile.dz for profile in self.profiles])
+        else:
+            return sum([(profile.values * profile.duration_sec).sum() for profile in self.profiles])
+
     def plot(self,*args, **kwargs):
         scale_factor=2000.0#*1000.0
         hours=[profile.hour for profile in self.profiles]
@@ -69,7 +87,8 @@ class EmissionScenario(ABC):
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
         plt.xticks(hours)  # Set text labels.
 
-        plt.title(f'Start time: {self.profiles[0].year}-{self.profiles[0].month}-{self.profiles[0].day} {self.profiles[0].hour}')
+        #plt.title(f'Start time: {self.profiles[0].year}-{self.profiles[0].month}-{self.profiles[0].day} {self.profiles[0].hour}')
+        plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()}')# Interval: {self.getInterval()} hours')
         
         plt.grid(True,alpha=0.3)
         plt.show()
@@ -91,7 +110,7 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
             _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
 
         for i in range(emission_scenario.shape[1]):
-            self.add_profile(VerticalProfile_Simple(staggerred_h,emission_scenario[:,i],years[i],
+            self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))
 
 
@@ -117,6 +136,7 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
         
         # Interpolate the emission scenario into the new time points
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
+        #todo: avoid interp_solution_emission_scenario
         interp_solution_emission_scenario = np.array(
             [np.maximum(interp1d(hours, scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
             for j in range(scenario_2d_array.shape[0])])
@@ -129,8 +149,9 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
         self._clear_profiles()
         
         # Add new profiles with interpolated values and new time points
+        #todo: avoid interp_solution_emission_scenario
         for i in range(interp_solution_emission_scenario.shape[1]):
-            self.add_profile(VerticalProfile_Simple(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
+            self.add_profile(VerticalProfile(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
                                 new_months[i],new_days[i],new_hours[i],new_duration_hours[i]*3600))
 
     def adjust_height(self,new_height):

@@ -11,7 +11,7 @@ class Emission():
     #    pass
 
 
-
+#todo: add 2nd constructor with 10 mass fractions
 class Emission_Ash(Emission):
     def __init__(self, mass_mt,lat,lon,mean,stddev):
         super().__init__(mass_mt,lat,lon)
