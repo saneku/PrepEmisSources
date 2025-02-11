@@ -122,7 +122,7 @@ class EmissionScenario():
         plt.grid(True,alpha=0.3)
         plt.show()
         
-    def adjust_time(self):
+    def adjust_time(self, interval_minutes=60):
         # Extract hours and durations in hours from profiles
         hours=[profile.hour for profile in self.profiles]
         durations_hours=[profile.duration_sec/3600 for profile in self.profiles]
@@ -134,7 +134,8 @@ class EmissionScenario():
             end_hour =  math.ceil(hours[-1])
         
         # Generate new hours list with the start and end hours    
-        new_hours = list(range(math.ceil(hours[0]),end_hour))
+        #new_hours = list(range(math.ceil(hours[0]),end_hour))
+        new_hours = [x for x in np.arange(math.ceil(hours[0]),end_hour, interval_minutes/60.0)]
         new_hours.insert(0, hours[0])  # Insert at 2nd index
         new_hours.append(end_hour)  # Append the end hour at the end
         

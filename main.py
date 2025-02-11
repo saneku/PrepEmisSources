@@ -26,7 +26,7 @@ if __name__ == "__main__":
     #random_values = np.random.randint(-100, 101, size=h.shape)
     #h += random_values
     #h = h[::8]
-        
+
     #so2=Emission_SO2(mass_mt=15,lat=15,lon=165)
     so2_scenario = EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15,lat=15,lon=165),
                                                      './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     netcdf_handler = NetCDFHandler(source_dir="./")
     #print(netcdf_handler)
     
-    emission_writer = EmissionWriter(scenarios, netcdf_handler, 60)
+    emission_writer = EmissionWriter(scenarios, netcdf_handler, 15)
     emission_writer.write_to_file()
    
     exit()

@@ -21,11 +21,11 @@ class EmissionWriter:
         
     def write_to_file(self):
         for scenario in self.__scenarios:           
-            scenario.adjust_time() # interpoloate to new time points with 1 (<-todo) hour interval
+            scenario.adjust_time(self.__output_interval) # minutes time intervals to interpolate to
             
             if not self.__only_once:
                 self.__netcdf_handler.prepare_file(scenario.getStartDateTime(),scenario.getEndDateTime(),
-                            interval_days=0,interval_hours=0,interval_mins=self.__output_interval)  #todo: add arbitaty time intervals
+                            interval_days=0,interval_hours=0,interval_mins=self.__output_interval)
                 self.__only_once=True
             #else:
             #    raise Exception("Only first scenario can create the netcdf file")
@@ -47,6 +47,8 @@ class EmissionWriter:
             surface = self.__netcdf_handler.getColumn_Area(x,y)     #in m2
             
             #todo: continue from here
+            #insert first erupbeg_start, erupbeg_end
+            
             #compute column depending on the type of material
             
             
