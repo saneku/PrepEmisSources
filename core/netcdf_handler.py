@@ -23,31 +23,34 @@ class NetCDFHandler:
             dx = wrfinput.getncattr('DX')
             self.surface = (dx/MAPFAC_MX)*(dy/MAPFAC_MY)       #surface in m2
 
-            self.h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
-            self.dh = np.diff(self.h,axis=0)
+            self.__h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
+            self.__dh = np.diff(self.__h,axis=0)
 
-            self.h = self.h[:-1]
-            self.h = self.h + self.dh * 0.5
-            self.h = self.h/1000.0
+            self.__h = self.__h[:-1]
+            self.__h = self.__h + self.__dh * 0.5
+            self.__h = self.__h / 1000.0
             
             #self.h and self.dh are 3d variable with dimensions (bottom_top, south_north, west_east)
 
     def __str__(self):
-        return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.h.shape})"
+        return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.__h.shape})"
 
     def prepare_file(self,start_time,end_time,interval_days,interval_hours,interval_mins):
         #===========================================
-        self.dst_file = "wrfchemv_d01_" + start_time
+        self.dst_file = "wrfchemv_d01_" + start_time.strftime("%Y-%m-%d_%H:%M:%S")
         #copy wrfinput to wrfchemv
         if os.path.exists(f'{self.source_dir}{self.dst_file}'):
             os.system(f'rm {self.source_dir}{self.dst_file}')
 
         ds = xr.open_dataset(f'{self.source_dir}{self.orgn_wrf_input_file}')
         ds_var = ds[['PH','PHB','T','Times']]
+        
+        #make a mark in the history todo; add more information
+        ds_var.attrs["HISTORY"] = ds_var.attrs.get("HISTORY", "") + f". Created by VolcanicEmissions on {datetime.datetime.utcnow().isoformat()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
         
-        #add variables to wrfchemv
+        #add variables to wrfchemv file
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
             self.__add2dVar(wrf_volc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
             self.__add2dVar(wrf_volc_file,"ERUP_END","END TIME OF ERUPTION","?")
@@ -58,31 +61,27 @@ class NetCDFHandler:
             for i in range(1,11):
                 self.__add3dVar(wrf_volc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
 
-        #todo: add record to netcdf file about this utility
-
         #with nc.Dataset(f'{self.source_dir}{self.dst_file}', 'a') as dataset:
             #days=range(0,366)
             time_range = pd.date_range(start=start_time, end=end_time, 
                            freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
 
             aux_times = np.chararray((len(time_range), 19), itemsize=1)
-            
+
             for i, aux_date in enumerate(time_range):
                 #aux_date = start_time + datetime.timedelta(days=interval_days,hours=interval_hours,minutes=interval_mins)
                 aux_times[i] = list(aux_date.strftime("%Y-%m-%d_%H:%M:%S"))
-            dataset.variables['Times'][:] = aux_times
+            wrf_volc_file.variables['Times'][:] = aux_times                                
             
             # Loop through all variables and create a new times
-            for var_name in dataset.variables:
+            for var_name in wrf_volc_file.variables:
                 if var_name == 'Times':
                     continue
-                var = dataset.variables[var_name]
+                var = wrf_volc_file.variables[var_name]
                 if 'Time' in var.dimensions:
                     print(var)
                     for i,_ in enumerate(aux_times):
                         var[i,:]=var[0,:]
-
-
 
     def __add3dVar(self,wrf_file,var_name,caption,units):
         wrf_file.createVariable(var_name, 'f4', ('Time','bottom_top','south_north', 'west_east'))
@@ -124,3 +123,16 @@ class NetCDFHandler:
                     jj=j
                     ii=i
         return ii,jj,dist0
+
+    def getColumn_H(self, x, y):
+        return np.array(self.__h[:,y,x])
+    
+    def getColumn_dH(self, x, y):
+        return np.array(self.__dh[:,y,x])
+    
+    def getColumn_Area(self, x, y): #m2
+        return np.array(self.surface[y,x])
+    
+    def write_column(self,var_name,column_values,time_index,x,y):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
+            wrf_volc_file.variables[var_name][time_index,:,y,x] = column_values

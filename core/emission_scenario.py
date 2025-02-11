@@ -1,12 +1,13 @@
 #from abc import ABC, abstractmethod
 import pickle
 import numpy as np
-from profiles.base import VerticalProfile
+from profiles.profiles import VerticalProfile
 #from profiles.types import VerticalProfile_Simple
 import math
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+from emissions.emissions import Emission#Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
 
 class EmissionScenario():
     def __init__(self,type_of_emission):
@@ -57,22 +58,43 @@ class EmissionScenario():
         print((sep.join(f.format(x) for x in vector)))
 
     def getStartDateTime(self):
+        if (self.__is_time_adjusted==False):
+            raise ValueError('Time must be adjusted before using getStartDateTime')
+        
         return datetime(int(self.profiles[0].year), int(self.profiles[0].month), int(self.profiles[0].day), int(self.profiles[0].hour))
     
     def getEndDateTime(self):
+        if (self.__is_time_adjusted==False):
+            raise ValueError('Time must be adjusted before using getEndDateTime')
+
         return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
+    
+    def getDuration(self):
+        return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
     
     #def getInterval(self):
     #    return self.profiles[-1].duration_sec/3600
 
-    def getTotalEmittedMass(self):
-        if (self.__is_divided_by_dz):
-            return 1
-            #todo
-            #return sum([(profile.values * profile.duration).sum() * profile.dz for profile in self.profiles])
-        else:
-            return sum([(profile.values * profile.duration_sec).sum() for profile in self.profiles])
+    def __getScenarioEmittedMass(self):
+        if (self.__is_divided_by_dh==False):
+            raise ValueError('Divide by dh before using getTotalEmittedMass')
 
+        return np.sum([profile.getProfileEmittedMass() for profile in self.profiles])
+
+
+    def normalize_by_total_mass(self):
+        if (self.__is_divided_by_dh == False):
+            raise ValueError('Divide by dh before using normalize_by_total_mass')
+        
+        mass_before=self.__getScenarioEmittedMass()
+        scale = self.type_of_emission.mass_Mt/mass_before
+        
+        for profile in self.profiles:
+            profile.values = profile.values * scale
+        
+        mass_after=self.__getScenarioEmittedMass()
+        print(f'Mass before: {mass_before} Mt, Mass after: {mass_after} Mt')
+    
     def plot(self,*args, **kwargs):
         scale_factor=2000.0#*1000.0
         hours=[profile.hour for profile in self.profiles]
@@ -99,28 +121,7 @@ class EmissionScenario():
         
         plt.grid(True,alpha=0.3)
         plt.show()
-
         
-class EmissionScenario_InvertedPinatubo(EmissionScenario):
-    def __init__(self, type_of_emission, filename):
-        super().__init__(type_of_emission)
-        
-        staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
-                            1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
-                            8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
-                            16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
-                            23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 
-                            32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
-                            42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
-
-        with open(filename,'rb') as infile:
-            _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-
-        for i in range(emission_scenario.shape[1]):
-            self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
-                                            months[i],days[i],hours[i],duration_sec[i]))
-
-
     def adjust_time(self):
         # Extract hours and durations in hours from profiles
         hours=[profile.hour for profile in self.profiles]
@@ -164,6 +165,8 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
         self.__is_time_adjusted = True
 
     def adjust_height(self,new_height):
+        if (self.__is_time_adjusted == False):
+            raise ValueError('Time must be adjusted before adjusting height')
         
         if(np.all(new_height[1:] > new_height[:-1])==False):
             raise ValueError('new_height must be monotonically increasing')
@@ -173,7 +176,38 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
             profile.h=new_height
         
         self.__is_height_adjusted = True
+    
+    def divide_by_dh(self,dh):        
+        if (self.__is_height_adjusted == False):
+            raise ValueError('Height must be adjusted before dividing by dh')
         
+        for profile in self.profiles:
+            profile.values = profile.values / dh
+        
+        self.__is_divided_by_dh = True
+
+        
+class EmissionScenario_InvertedPinatubo(EmissionScenario):
+    def __init__(self, type_of_emission, filename):
+        super().__init__(type_of_emission)
+        
+        #staggerred_h is from the paper
+        staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
+                            1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
+                            8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
+                            16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
+                            23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 
+                            32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
+                            42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
+
+        with open(filename,'rb') as infile:
+            _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
+
+        for i in range(emission_scenario.shape[1]):
+            self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
+                                            months[i],days[i],hours[i],duration_sec[i]))
+
+
     '''
     def read_eruption_file(self, filename):
         # Read the file

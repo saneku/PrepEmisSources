@@ -1,4 +1,4 @@
-from emissions.base import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
+from emissions.emissions import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
 #from profiles.types import VerticalProfile_Uniform, VerticalProfile_Suzuki, VerticalProfile_Simple
 #from core.eruption import Eruption, InvertedPinatuboEruption
 from core.netcdf_handler import NetCDFHandler
@@ -38,7 +38,7 @@ if __name__ == "__main__":
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 #Emission_WaterVapor(mass_mt=150,lat=15,lon=165)
                 ]
-    exit()
+    #exit()
     
 
     netcdf_handler = NetCDFHandler(source_dir="./")
