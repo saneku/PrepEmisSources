@@ -1,5 +1,6 @@
 #from abc import ABC, abstractmethod
 import numpy as np
+import calendar
 
 class VerticalProfile():
     def __init__(self, staggerred_h,profile,year,month,day,hour,duration_sec):
@@ -13,6 +14,19 @@ class VerticalProfile():
        
     def getProfileEmittedMass(self):
         return np.sum(self.values * self.duration_sec)
+    
+    def getProfileStartTimeAndDuration(self):
+        if calendar.isleap(self.year):
+            K = 1
+        else:
+            K = 2
+
+        beg_jul = ((275 * self.month)/9) - K*((self.month+9)/12) + self.day - 30
+        beg_jul = int(beg_jul)
+        erup_beg = beg_jul * 1000. + self.hour
+
+        return erup_beg,self.duration_sec/60.0
+    
     #@abstractmethod
     #def generate_profile(self, height_levels):
     #    pass

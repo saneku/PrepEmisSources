@@ -60,8 +60,6 @@ class NetCDFHandler:
             for i in range(1,11):
                 self.__add3dVar(wrf_volc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
 
-        #with nc.Dataset(f'{self.source_dir}{self.dst_file}', 'a') as dataset:
-            #days=range(0,366)
             time_range = pd.date_range(start=start_time, end=end_time, 
                            freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
 
@@ -135,3 +133,7 @@ class NetCDFHandler:
     def write_column(self,var_name,column_values,time_index,x,y):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
             wrf_volc_file.variables[var_name][time_index,:,y,x] = column_values
+
+    def write_to_cell(self,var_name,value,x,y):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
+            wrf_volc_file.variables[var_name][:,y,x] = value

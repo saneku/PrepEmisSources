@@ -58,16 +58,16 @@ class EmissionScenario():
         print((sep.join(f.format(x) for x in vector)))
 
     def getStartDateTime(self):
-        if (self.__is_time_adjusted==False):
-            raise ValueError('Time must be adjusted before using getStartDateTime')
+        #if (self.__is_time_adjusted==False):
+        #    raise ValueError('Time must be adjusted before using getStartDateTime')
         
-        return datetime(int(self.profiles[0].year), int(self.profiles[0].month), int(self.profiles[0].day), int(self.profiles[0].hour))
+        return datetime(int(self.profiles[0].year), int(self.profiles[0].month), int(self.profiles[0].day), int(self.profiles[0].hour),int((self.profiles[0].hour - int(self.profiles[0].hour))*60.0))
     
     def getEndDateTime(self):
-        if (self.__is_time_adjusted==False):
-            raise ValueError('Time must be adjusted before using getEndDateTime')
+        #if (self.__is_time_adjusted==False):
+        #    raise ValueError('Time must be adjusted before using getEndDateTime')
 
-        return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
+        return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour),int((self.profiles[-1].hour - int(self.profiles[-1].hour))*60.0)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
     
     def getDuration(self):
         return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
@@ -141,13 +141,19 @@ class EmissionScenario():
     def interpolate_time(self, interval_minutes=60):
         # Extract hours and durations in hours from profiles
         hours=[profile.hour for profile in self.profiles]
-        durations_hours=[profile.duration_sec/3600 for profile in self.profiles]
+        durations_hours=[profile.duration_sec/3600.0 for profile in self.profiles]
         
         # Determine the end hour for the new time points
         if (math.ceil(hours[-1]) > (hours[-1] + durations_hours[-1])):
             end_hour = math.ceil(hours[-1])-1
         else:
             end_hour =  math.ceil(hours[-1])
+        
+        #HERE
+        import pandas as pd
+        time_range = pd.date_range(start=self.getStartDateTime(), end=self.getEndDateTime(), 
+                           freq=pd.Timedelta(days=0, hours=0, minutes=interval_minutes))
+
         
         # Generate new hours list with the start and end hours    
         #new_hours = list(range(math.ceil(hours[0]),end_hour))
@@ -165,7 +171,7 @@ class EmissionScenario():
             [np.maximum(interp1d(hours, temp_scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
             for j in range(temp_scenario_2d_array.shape[0])])
         
-        #Generate new dates based on the new hours
+        #Generate new dates based on the new hours, keep h the same
         levels_h = self.profiles[0].h     
         new_years, new_months, new_days = self._generate_dates(self.profiles[0].year, self.profiles[0].month, self.profiles[0].day, new_hours)
         
@@ -180,7 +186,7 @@ class EmissionScenario():
         self.__is_time_adjusted = True
 
     def interpolate_height(self,new_height):
-        if (self.__is_time_adjusted == False):
+        if (self.__is_divided_by_dh == False):
             raise ValueError('Time must be adjusted before adjusting height')
         
         if(np.all(new_height[1:] > new_height[:-1])==False):
@@ -193,13 +199,23 @@ class EmissionScenario():
         self.__is_height_adjusted = True
     
     def divide_by_dh(self,dh):        
-        if (self.__is_height_adjusted == False):
+        if (self.__is_time_adjusted == False):
             raise ValueError('Height must be adjusted before dividing by dh')
         
         for profile in self.profiles:
             profile.values = profile.values / dh
         
         self.__is_divided_by_dh = True
+        
+    def get_profiles_start_times(self):
+        start_times = []
+        duration_mins = []
+        for profile in self.profiles:
+            s,d = profile.getProfileStartTimeAndDuration()
+            start_times.append(s)
+            duration_mins.append(d)
+        
+        return start_times,duration_mins
 
 class EmissionScenario_InvertedPinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
@@ -216,7 +232,7 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
 
         with open(filename,'rb') as infile:
             _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-        #emission_scenario in [Mt/sec]
+        #emission_scenario in [Mt]
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))

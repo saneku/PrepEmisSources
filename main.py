@@ -10,34 +10,16 @@ import numpy as np
 
 if __name__ == "__main__":
     
-    #ash=Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8)
-    ash_scenario = EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8),
-                                                    './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles')
-    #scenario.plot(linestyle='--', color='grey', marker='')
-    #print ("BEFORE")
-    
-    #print ("AFTER")
-    #scenario.plot(linestyle='-', color='red', marker='+')
-    #print(scenario)
-
-    #h=np.array([ 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45])
-    #random_values = np.random.randint(-100, 101, size=h.shape)
-    #h += random_values
-    #h = h[::8]
-
-    #so2=Emission_SO2(mass_mt=15,lat=15,lon=165)
-    so2_scenario = EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15,lat=15,lon=165),
-                                                     './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
-    
-    
     scenarios = [
-                ash_scenario,
-                so2_scenario
+                EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8),
+                                                    './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
+                
+                EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15,lat=15,lon=165),
+                                                     './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 #Emission_WaterVapor(mass_mt=150,lat=15,lon=165)
                 ]
-    #exit()
-    
+    #scenarios[0].plot(linestyle='--', color='grey', marker='')
 
     netcdf_handler = NetCDFHandler(source_dir="./")
     #print(netcdf_handler)

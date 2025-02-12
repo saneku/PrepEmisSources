@@ -54,7 +54,7 @@ def add2dVar(wrf_file,var_name,caption,units):
 
 
 orgn_dir='/scratch/ukhova/SandBox/WRF/run_pinatubo_3month/'
-'''
+
 orgn_dir='../'
 orgn_wrf_input_file="wrfinput_d01"
 #dst_file="wrfchemv_d01"
@@ -81,7 +81,7 @@ Z = Z + dz*0.5
 Z = Z/1000.0
 
 wrfinput.close()
-'''
+
 #===========================================
 if os.path.exists(f'{orgn_dir}{dst_file}'):
     os.system(f'rm {orgn_dir}{dst_file}')
@@ -91,11 +91,11 @@ ds_var = ds[['PH','PHB','T','Times']]
 ds_var.to_netcdf(f'{orgn_dir}{dst_file}')
 #OR os.system(f'ncks -v ALB,Times {orgn_dir}{orgn_wrf_input_file} {orgn_dir}{dst_file}')
 #===========================================
-'''
+
 
 dst_file="wrfchemv_d01"
 wrf_volc_file = Dataset(f'{orgn_dir}{dst_file}','r+')
-'''
+
 add2dVar(wrf_volc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
 add2dVar(wrf_volc_file,"ERUP_END","END TIME OF ERUPTION","?")
 add3dVar(wrf_volc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")

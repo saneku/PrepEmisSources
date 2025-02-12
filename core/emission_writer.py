@@ -33,21 +33,23 @@ class EmissionWriter:
             y,x,dist0 = self.__netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,
                                                                   scenario.type_of_emission.lon)
         
-            # interpolate to new height levels at (x,y) location
+            #divide by dh to convert from Mt to Mt/m
+            scenario.divide_by_dh(self.__netcdf_handler.getColumn_dH(x,y))
             scenario.interpolate_height(self.__netcdf_handler.getColumn_H(x,y))
             #scenario.plot(linestyle='-', color='blue', marker='+')
-            
-            #divide by dh to convert from Mt/s to Mt/m/s
-            scenario.divide_by_dh(self.__netcdf_handler.getColumn_dH(x,y))
-            
-            #normalize by total mass
+
             scenario.normalize_by_total_mass()
             
-            erup_dt = scenario.getDuration()    #duration of eruption in seconds
+            erup_dt = scenario.getDuration()    #whole duration of eruption in seconds
             surface = self.__netcdf_handler.getColumn_Area(x,y)     #cell area in m2
             
-            #todo: continue from here
-            #insert first erupbeg_start, erupbeg_end
+            
+            
+            
+            s,d = scenario.get_profiles_start_times()   # for example, s=165002, d=10 (minutes)
+            self.__netcdf_handler.write_to_cell("ERUP_BEG",s,x,y)
+            self.__netcdf_handler.write_to_cell("ERUP_END",d,x,y)
+            
             
             #compute column depending on the type of material
             
@@ -55,3 +57,10 @@ class EmissionWriter:
             # look at the create_volc_emission.py in Misc folder
             #self.__netcdf_handler.write_column(self,"var_name",column_values,time_index,x,y)
             print(f"DONE writing to netcdf file {scenario}")
+            
+        print("--------------------------")
+        print ("Set the following in namelist.input: ")
+        print (f"auxinput13_interval_m = {self.__output_interval}")
+        print (f"auxinput13_time_intervals = {len(s)}")
+        print (f"auxinput13_file_name = {self.__netcdf_handler.dst_file}")
+        print("--------------------------")
