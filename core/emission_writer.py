@@ -21,7 +21,7 @@ class EmissionWriter:
         
     def write_to_file(self):
         for scenario in self.__scenarios:           
-            scenario.adjust_time(self.__output_interval) # minutes time intervals to interpolate to
+            scenario.interpolate_time(self.__output_interval) # minutes time intervals to interpolate to
             
             if not self.__only_once:
                 self.__netcdf_handler.prepare_file(scenario.getStartDateTime(),scenario.getEndDateTime(),
@@ -34,17 +34,17 @@ class EmissionWriter:
                                                                   scenario.type_of_emission.lon)
         
             # interpolate to new height levels at (x,y) location
-            scenario.adjust_height(self.__netcdf_handler.getColumn_H(x,y))
+            scenario.interpolate_height(self.__netcdf_handler.getColumn_H(x,y))
             #scenario.plot(linestyle='-', color='blue', marker='+')
             
-            #divide by dh
+            #divide by dh to convert from Mt/s to Mt/m/s
             scenario.divide_by_dh(self.__netcdf_handler.getColumn_dH(x,y))
             
             #normalize by total mass
             scenario.normalize_by_total_mass()
             
-            erup_dt = scenario.getDuration()    #in seconds
-            surface = self.__netcdf_handler.getColumn_Area(x,y)     #in m2
+            erup_dt = scenario.getDuration()    #duration of eruption in seconds
+            surface = self.__netcdf_handler.getColumn_Area(x,y)     #cell area in m2
             
             #todo: continue from here
             #insert first erupbeg_start, erupbeg_end

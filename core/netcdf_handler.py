@@ -24,11 +24,10 @@ class NetCDFHandler:
             self.surface = (dx/MAPFAC_MX)*(dy/MAPFAC_MY)       #surface in m2
 
             self.__h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
-            self.__dh = np.diff(self.__h,axis=0)
+            self.__dh = np.diff(self.__h,axis=0)                #dh in m
 
             self.__h = self.__h[:-1]
-            self.__h = self.__h + self.__dh * 0.5
-            self.__h = self.__h / 1000.0
+            self.__h = self.__h + self.__dh * 0.5               #height in m
             
             #self.h and self.dh are 3d variable with dimensions (bottom_top, south_north, west_east)
 

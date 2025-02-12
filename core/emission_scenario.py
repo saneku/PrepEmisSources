@@ -82,6 +82,10 @@ class EmissionScenario():
         return np.sum([profile.getProfileEmittedMass() for profile in self.profiles])
 
 
+    def __scaleProfiles(self, scale):
+        for profile in self.profiles:
+            profile.values = profile.values * scale
+
     def normalize_by_total_mass(self):
         if (self.__is_divided_by_dh == False):
             raise ValueError('Divide by dh before using normalize_by_total_mass')
@@ -89,14 +93,21 @@ class EmissionScenario():
         mass_before=self.__getScenarioEmittedMass()
         scale = self.type_of_emission.mass_Mt/mass_before
         
-        for profile in self.profiles:
-            profile.values = profile.values * scale
+        #for profile in self.profiles:
+        #    profile.values = profile.values * scale
+        self.__scaleProfiles(scale)
         
         mass_after=self.__getScenarioEmittedMass()
-        print(f'Mass before: {mass_before} Mt, Mass after: {mass_after} Mt')
+        print(f'Mass before normalisation: {mass_before} Mt, Mass after: {mass_after} Mt')
+        
+        self.__is_normalized_by_total_mass = True
     
     def plot(self,*args, **kwargs):
         scale_factor=2000.0#*1000.0
+        
+        if (self.__is_divided_by_dh):
+            scale_factor = scale_factor * 1000.0    #just for conviniency
+        
         hours=[profile.hour for profile in self.profiles]
         fig = plt.figure(figsize=(18,7))
         for i, profile in enumerate(self.profiles):
@@ -116,13 +127,18 @@ class EmissionScenario():
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
         plt.xticks(hours)  # Set text labels.
 
-        #plt.title(f'Start time: {self.profiles[0].year}-{self.profiles[0].month}-{self.profiles[0].day} {self.profiles[0].hour}')
-        plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()}')# Interval: {self.getInterval()} hours')
+        if (self.__is_divided_by_dh):
+            if (self.__is_normalized_by_total_mass):
+                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]. Normalized by total mass = {self.__getScenarioEmittedMass()}')
+            else:
+                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]')
+        else:
+            plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/s]')
         
         plt.grid(True,alpha=0.3)
         plt.show()
         
-    def adjust_time(self, interval_minutes=60):
+    def interpolate_time(self, interval_minutes=60):
         # Extract hours and durations in hours from profiles
         hours=[profile.hour for profile in self.profiles]
         durations_hours=[profile.duration_sec/3600 for profile in self.profiles]
@@ -144,11 +160,10 @@ class EmissionScenario():
         new_duration_hours.append((hours[-1] + durations_hours[-1])-end_hour)
         
         # Interpolate the emission scenario into the new time points
-        scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
-        #todo: avoid interp_solution_emission_scenario
-        interp_solution_emission_scenario = np.array(
-            [np.maximum(interp1d(hours, scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
-            for j in range(scenario_2d_array.shape[0])])
+        temp_scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
+        temp_interp_solution_emission_scenario = np.array(
+            [np.maximum(interp1d(hours, temp_scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
+            for j in range(temp_scenario_2d_array.shape[0])])
         
         #Generate new dates based on the new hours
         levels_h = self.profiles[0].h     
@@ -158,14 +173,13 @@ class EmissionScenario():
         self._clear_profiles()
         
         # Add new profiles with interpolated values and new time points
-        #todo: avoid interp_solution_emission_scenario
-        for i in range(interp_solution_emission_scenario.shape[1]):
-            self.add_profile(VerticalProfile(levels_h,interp_solution_emission_scenario[:,i],new_years[i],
+        for i in range(temp_interp_solution_emission_scenario.shape[1]):
+            self.add_profile(VerticalProfile(levels_h,temp_interp_solution_emission_scenario[:,i],new_years[i],
                                 new_months[i],new_days[i],new_hours[i],new_duration_hours[i]*3600))
 
         self.__is_time_adjusted = True
 
-    def adjust_height(self,new_height):
+    def interpolate_height(self,new_height):
         if (self.__is_time_adjusted == False):
             raise ValueError('Time must be adjusted before adjusting height')
         
@@ -187,7 +201,6 @@ class EmissionScenario():
         
         self.__is_divided_by_dh = True
 
-        
 class EmissionScenario_InvertedPinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
         super().__init__(type_of_emission)
@@ -203,7 +216,7 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
 
         with open(filename,'rb') as infile:
             _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-
+        #emission_scenario in [Mt/sec]
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))

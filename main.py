@@ -10,8 +10,6 @@ import numpy as np
 
 if __name__ == "__main__":
     
-    #todo: add arbitaty time intervals
-    
     #ash=Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8)
     ash_scenario = EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=65,lat=15,lon=165,mean=2.4,stddev=1.8),
                                                     './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles')
@@ -44,7 +42,7 @@ if __name__ == "__main__":
     netcdf_handler = NetCDFHandler(source_dir="./")
     #print(netcdf_handler)
     
-    emission_writer = EmissionWriter(scenarios, netcdf_handler, 15)
+    emission_writer = EmissionWriter(scenarios, netcdf_handler, 10)
     emission_writer.write_to_file()
    
     exit()
