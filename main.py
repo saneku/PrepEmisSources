@@ -26,5 +26,3 @@ if __name__ == "__main__":
     
     emission_writer = EmissionWriter(scenarios, netcdf_handler, 10)
     emission_writer.write_to_file()
-   
-    exit()

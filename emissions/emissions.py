@@ -1,6 +1,6 @@
-#from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod
 
-class Emission():
+class Emission(ABC):
     def __init__(self, mass_mt,lat,lon):
         self.mass_Mt = mass_mt
         self.lat = lat
@@ -8,44 +8,54 @@ class Emission():
 
     def __str__(self):
         return f" Emission: {self.mass_Mt} Mt, lat: {self.lat}, lon: {self.lon}"
-    #@abstractmethod
-    #def generate_distribution(self):
-    #    pass
+    
+    @abstractmethod
+    def get_name_of_material(self):
+        pass
 
 
 #todo: add 2nd constructor with 10 mass fractions
 class Emission_Ash(Emission):
     def __init__(self, mass_mt,lat,lon,mean,stddev):
-        super().__init__(mass_mt,lat,lon)
-        
         self.mean = mean
         self.stddev = stddev
+        super().__init__(mass_mt,lat,lon)
 
     def __str__(self):
         return f'Ash mean={self.mean} stddev={self.stddev}. {super().__str__()}'
-    #def generate_distribution(self):
-    #    return np.random.normal(self.mean, self.stddev, self.size)
+    
+    def get_name_of_material(self):
+        return 'ash'
 
 class Emission_SO2(Emission):
+    def __init__(self, mass_mt,lat,lon):
+        super().__init__(mass_mt,lat,lon)
+
     def __str__(self):
         return f'SO2 {super().__str__()}'
 
     #def __init__(self, mass_mt,lat,long):
     #    super().__init__(mass_mt,lat,lon)
     
-    #def generate_distribution(self):
-    #    return np.random.lognormal(np.log(self.mean), self.stddev, self.size)
+    def get_name_of_material(self):
+        return 'so2'
 
 class Emission_Sulfate(Emission):
+    def __init__(self, mass_mt,lat,lon):
+        super().__init__(mass_mt,lat,lon)
+    
     def __str__(self):
         return f'Sulfate {super().__str__()}'
 
-    #def generate_distribution(self):
-    #    return np.random.gamma(shape=self.mean, scale=self.stddev, size=self.size)
+    def get_name_of_material(self):
+        return 'sulfate'
 
 class Emission_WaterVapor(Emission):
-        def __str__(self):
-            return f'Water vapor {super().__str__()}'
+    def __init__(self, mass_mt,lat,lon):
+        super().__init__(mass_mt,lat,lon)
 
-    #def generate_distribution(self):
-    #    return np.random.uniform(self.mean - self.stddev, self.mean + self.stddev, self.size)
+    def __str__(self):
+        return f'Water vapor {super().__str__()}'
+
+    def get_name_of_material(self):
+        return 'watervapor'

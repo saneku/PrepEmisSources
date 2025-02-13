@@ -36,7 +36,7 @@ class WRFNetCDFHandler:
 
     def prepare_file(self,suffix):
         #===========================================
-        self.dst_file = "wrfchemv_d01_" + suffix.strftime("%Y-%m-%d_%H:%M:%S")
+        self.dst_file = f'wrfchemv_d01.{suffix.strftime("%Y-%m-%d_%H:%M:%S")}.nc'
         #copy wrfinput to wrfchemv
         if os.path.exists(f'{self.source_dir}{self.dst_file}'):
             os.system(f'rm {self.source_dir}{self.dst_file}')
@@ -107,12 +107,14 @@ class WRFNetCDFHandler:
     def getColumn_dH(self, x, y):
         return np.array(self.__dh[:,y,x])
     
-    def getColumn_Area(self, x, y): #m2
-        return np.array(self.surface[y,x])
+    #def getColumn_Area(self, x, y): #m2
+    #    return np.array(self.surface[y,x])
     
-    def write_column(self,var_name,column_values,time_index,x,y):
+    def write_column(self,var_name,factor,profiles,x,y):
+        factor = factor/np.array(self.surface[y,x])
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
-            wrf_volc_file.variables[var_name][time_index,:,y,x] = column_values
+            for time_index,profile in enumerate(profiles):
+                wrf_volc_file.variables[var_name][time_index,:,y,x] = factor * profile.values
 
     def write_to_cell(self,var_name,value,x,y):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:

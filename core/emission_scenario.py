@@ -74,8 +74,8 @@ class EmissionScenario():
         #return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour),int((self.profiles[-1].hour - int(self.profiles[-1].hour))*60.0)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
     
     #todo: remove it
-    def getDuration(self):
-        return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
+    #def getDuration(self):
+    #    return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
     
     def get_profiles_Decimal_StartTimeAndDuration(self):
         start_times = []
@@ -93,7 +93,7 @@ class EmissionScenario():
     #def getInterval(self):
     #    return self.profiles[-1].duration_sec/3600
 
-    def __getScenarioEmittedMass(self):
+    def getScenarioEmittedMass(self):
         if (self.__is_divided_by_dh==False):
             raise ValueError('Divide by dh before using getTotalEmittedMass')
 
@@ -107,14 +107,10 @@ class EmissionScenario():
         if (self.__is_divided_by_dh == False):
             raise ValueError('Divide by dh before using normalize_by_total_mass')
         
-        mass_before=self.__getScenarioEmittedMass()
+        mass_before=self.getScenarioEmittedMass()
         scale = self.type_of_emission.mass_Mt/mass_before
-        
-        #for profile in self.profiles:
-        #    profile.values = profile.values * scale
         self.__scaleProfiles(scale)
-        
-        mass_after=self.__getScenarioEmittedMass()
+        mass_after=self.getScenarioEmittedMass()
         print(f'Mass before normalisation: {mass_before} Mt, Mass after: {mass_after} Mt')
         
         self.__is_normalized_by_total_mass = True
