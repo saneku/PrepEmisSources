@@ -37,6 +37,9 @@ class EmissionScenario():
         
         return [profile.__class__.__name__ for profile in self.profiles]
 
+    def getNumberOfProfiles(self):
+        return len(self.profiles)
+
     def _clear_profiles(self):
         self.profiles = []
 
@@ -56,21 +59,36 @@ class EmissionScenario():
     
     def __print_vector(self,vector,sep=' ',f="{:0.6e}"):
         print((sep.join(f.format(x) for x in vector)))
-
+    
+    #returns start time of eruption.
     def getStartDateTime(self):
         #if (self.__is_time_adjusted==False):
         #    raise ValueError('Time must be adjusted before using getStartDateTime')
         return self.profiles[0].start_datetime
-        #return datetime(int(self.profiles[0].year), int(self.profiles[0].month), int(self.profiles[0].day), int(self.profiles[0].hour),int((self.profiles[0].hour - int(self.profiles[0].hour))*60.0))
-    
+
+    #returns end time of eruption.
     def getEndDateTime(self):
         #if (self.__is_time_adjusted==False):
         #    raise ValueError('Time must be adjusted before using getEndDateTime')
         return self.profiles[-1].start_datetime + timedelta(seconds=int(self.profiles[-1].duration_sec))
         #return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour),int((self.profiles[-1].hour - int(self.profiles[-1].hour))*60.0)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
     
+    #todo: remove it
     def getDuration(self):
         return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
+    
+    def get_profiles_Decimal_StartTimeAndDuration(self):
+        start_times = []
+        duration_mins = []
+        for profile in self.profiles:
+            s,d = profile.getProfileStartTimeAndDuration()
+            start_times.append(s)
+            duration_mins.append(d)
+        
+        return start_times,duration_mins
+    
+    def get_profiles_StartDateTime(self):
+        return [profile.start_datetime for profile in self.profiles]
     
     #def getInterval(self):
     #    return self.profiles[-1].duration_sec/3600
@@ -80,7 +98,6 @@ class EmissionScenario():
             raise ValueError('Divide by dh before using getTotalEmittedMass')
 
         return np.sum([profile.getProfileEmittedMass() for profile in self.profiles])
-
 
     def __scaleProfiles(self, scale):
         for profile in self.profiles:
@@ -173,8 +190,8 @@ class EmissionScenario():
         new_months = new_datetime_list.month.tolist()
         new_days = new_datetime_list.day.tolist()
         new_hours = new_datetime_list.hour.tolist()
+        new_minutes = new_datetime_list.minute.tolist()
         new_duration_hours = np.diff(new_datetime_list)/ np.timedelta64(1, 'h')
-        
 
         # Interpolate the emission scenario into the new time points
         temp_scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
@@ -186,14 +203,14 @@ class EmissionScenario():
         for j in range(temp_scenario_2d_array.shape[0]):
             df = pd.DataFrame({"datetime": old_datetime_list, "value": temp_scenario_2d_array[j, :]}).set_index("datetime")
             new_values = df.reindex(df.index.union(new_datetime_list)).interpolate(method="time").loc[new_datetime_list]["value"].tolist()
-            temp_interp_solution_emission_scenario[j,:] = new_values
+            temp_interp_solution_emission_scenario[j,:] = np.maximum(new_values,0)
                 
         self._clear_profiles()  # Clear existing profiles
         
         # Add new profiles with interpolated values at new time points. -1 because last time is the time, when eruption is finished.
         for i in range(temp_interp_solution_emission_scenario.shape[1] - 1):
             self.add_profile(VerticalProfile(levels_h,temp_interp_solution_emission_scenario[:,i],new_years[i],
-                                            new_months[i],new_days[i],new_hours[i],new_duration_hours[i] * 3600))
+                                            new_months[i],new_days[i],new_hours[i]+new_minutes[i]/60.0,new_duration_hours[i] * 3600))
 
         self.__is_time_adjusted = True
 
@@ -219,15 +236,6 @@ class EmissionScenario():
         
         self.__is_divided_by_dh = True
         
-    def get_profiles_start_times(self):
-        start_times = []
-        duration_mins = []
-        for profile in self.profiles:
-            s,d = profile.getProfileStartTimeAndDuration()
-            start_times.append(s)
-            duration_mins.append(d)
-        
-        return start_times,duration_mins
 
 class EmissionScenario_InvertedPinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):

@@ -5,7 +5,7 @@ import xarray as xr
 import datetime
 import pandas as pd
 
-class NetCDFHandler:
+class WRFNetCDFHandler:
     def __init__(self, source_dir='./'):
         self.source_dir = source_dir
         self.orgn_wrf_input_file = "wrfinput_d01"
@@ -34,9 +34,9 @@ class NetCDFHandler:
     def __str__(self):
         return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.__h.shape})"
 
-    def prepare_file(self,start_time,end_time,interval_days,interval_hours,interval_mins):
+    def prepare_file(self,suffix):
         #===========================================
-        self.dst_file = "wrfchemv_d01_" + start_time.strftime("%Y-%m-%d_%H:%M:%S")
+        self.dst_file = "wrfchemv_d01_" + suffix.strftime("%Y-%m-%d_%H:%M:%S")
         #copy wrfinput to wrfchemv
         if os.path.exists(f'{self.source_dir}{self.dst_file}'):
             os.system(f'rm {self.source_dir}{self.dst_file}')
@@ -50,35 +50,15 @@ class NetCDFHandler:
         #===========================================
         
         #add variables to wrfchemv file
-        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
-            self.__add2dVar(wrf_volc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
-            self.__add2dVar(wrf_volc_file,"ERUP_END","END TIME OF ERUPTION","?")
-            self.__add3dVar(wrf_volc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")
-            self.__add3dVar(wrf_volc_file,"E_VSULF","Volcanic Emissions, SULF","mol/m2/h")
-            self.__add3dVar(wrf_volc_file,"E_QV","Volcanic Emissions, QV","kg/m2/s")
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as nc_file:
+            self.__add2dVar(nc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
+            self.__add2dVar(nc_file,"ERUP_END","END TIME OF ERUPTION","?")
+            self.__add3dVar(nc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")
+            self.__add3dVar(nc_file,"E_VSULF","Volcanic Emissions, SULF","mol/m2/h")
+            self.__add3dVar(nc_file,"E_QV","Volcanic Emissions, QV","kg/m2/s")
 
             for i in range(1,11):
-                self.__add3dVar(wrf_volc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
-
-            time_range = pd.date_range(start=start_time, end=end_time, 
-                           freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
-
-            aux_times = np.chararray((len(time_range), 19), itemsize=1)
-
-            for i, aux_date in enumerate(time_range):
-                #aux_date = start_time + datetime.timedelta(days=interval_days,hours=interval_hours,minutes=interval_mins)
-                aux_times[i] = list(aux_date.strftime("%Y-%m-%d_%H:%M:%S"))
-            wrf_volc_file.variables['Times'][:] = aux_times                                
-            
-            # Loop through all variables and create a new times
-            for var_name in wrf_volc_file.variables:
-                if var_name == 'Times':
-                    continue
-                var = wrf_volc_file.variables[var_name]
-                if 'Time' in var.dimensions:
-                    print(var)
-                    for i,_ in enumerate(aux_times):
-                        var[i,:]=var[0,:]
+                self.__add3dVar(nc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
 
     def __add3dVar(self,wrf_file,var_name,caption,units):
         wrf_file.createVariable(var_name, 'f4', ('Time','bottom_top','south_north', 'west_east'))
@@ -137,3 +117,27 @@ class NetCDFHandler:
     def write_to_cell(self,var_name,value,x,y):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
             wrf_volc_file.variables[var_name][:,y,x] = value
+            
+    #start_time,end_time,interval_days,interval_hours,interval_mins):
+    def write_times(self,start_times):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
+            #time_range = pd.date_range(start=start_time, end=end_time, 
+            #                freq=pd.Timedelta(days=interval_days, hours=interval_hours, minutes=interval_mins))
+
+            #time_range = time_range[:-1]    #crop the last
+            aux_times = np.chararray((len(start_times), 19), itemsize=1)
+
+            for i, aux_date in enumerate(start_times):
+                #aux_date = start_time + datetime.timedelta(days=interval_days,hours=interval_hours,minutes=interval_mins)
+                aux_times[i] = list(aux_date.strftime("%Y-%m-%d_%H:%M:%S"))
+            wrf_volc_file.variables['Times'][:] = aux_times                                
+            
+            # Loop through all variables and create a new times
+            for var_name in wrf_volc_file.variables:
+                if var_name == 'Times':
+                    continue
+                var = wrf_volc_file.variables[var_name]
+                if 'Time' in var.dimensions:
+                    print(var)
+                    for i,_ in enumerate(aux_times):
+                        var[i,:]=var[0,:]

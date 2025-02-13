@@ -7,23 +7,21 @@ class VerticalProfile():
     def __init__(self, staggerred_h,profile,year,month,day,hour,duration_sec):
         self.h = staggerred_h
         self.values = profile
-        
-        ######
         self.year = year
         self.month = month
         self.day = day
         self.hour = hour
         self.duration_sec = duration_sec
-        ######
         
-        self.start_datetime = self.construct_start_datetime()
+        self.start_datetime = datetime(int(self.year),int(self.month), int(self.day), 
+                                int(self.hour),int((self.hour - int(self.hour))*60.0))
+        #self.construct_start_datetime()
        
     def getProfileEmittedMass(self):
         return np.sum(self.values * self.duration_sec)
     
-    def construct_start_datetime(self):
-        return datetime(int(self.year),int(self.month), int(self.day), 
-                        int(self.hour),int((self.hour - int(self.hour))*60.0))
+    #def construct_start_datetime(self):
+    #    return 
     
     def getProfileStartTimeAndDuration(self):
         if calendar.isleap(self.year):
