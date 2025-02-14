@@ -1,12 +1,9 @@
 from emissions.emissions import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
-#from profiles.types import VerticalProfile_Uniform, VerticalProfile_Suzuki, VerticalProfile_Simple
-#from core.eruption import Eruption, InvertedPinatuboEruption
 from core.netcdf_handler import WRFNetCDFHandler
 from core.emission_scenario import EmissionScenario_InvertedPinatubo
 from core.emission_writer import EmissionWriter
 
 import numpy as np
-#import datetime
 
 if __name__ == "__main__":
     

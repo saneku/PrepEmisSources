@@ -152,36 +152,19 @@ class EmissionScenario():
         plt.show()
         
     def interpolate_time(self, interval_minutes=60):
-        # Extract hours and durations in hours from profiles
-        #hours=[profile.hour for profile in self.profiles]
-        #durations_hours=[profile.duration_sec/3600.0 for profile in self.profiles]
-        
-        # Determine the end hour for the new time points
-        #if (math.ceil(hours[-1]) > (hours[-1] + durations_hours[-1])):
-        #    end_hour = math.ceil(hours[-1])-1
-        #else:
-        #    end_hour =  math.ceil(hours[-1])
-        
-        #HERE
-        
-        new_datetime_list = pd.date_range(start=self.getStartDateTime(), end=self.getEndDateTime(), 
+        dt = self.getStartDateTime()
+        # Round minutes to nearest 10th
+        new_minute = round(dt.minute / 10.0) * 10.0
+        # Adjust datetime accordingly
+        StartDateTime_rounded = dt.replace(minute=0, second=0) + timedelta(minutes=new_minute)
+
+        new_datetime_list = pd.date_range(start=StartDateTime_rounded, end=self.getEndDateTime(), 
                            freq=pd.Timedelta(days=0, hours=0, minutes=interval_minutes))
 
         old_datetime_list = [profile.start_datetime for profile in self.profiles]
         
-        # Generate new hours list with the start and end hours    
-        #new_hours = list(range(math.ceil(hours[0]),end_hour))
-        #new_hours = [x for x in np.arange(math.ceil(hours[0]),end_hour, interval_minutes/60.0)]
-        #new_hours.insert(0, hours[0])  # Insert at 2nd index
-        #new_hours.append(end_hour)  # Append the end hour at the end
-        
-        # Calculate new durations in hours
-        #new_duration_hours=list(np.diff(new_hours))
-        #new_duration_hours.append((hours[-1] + durations_hours[-1])-end_hour)
-
         #Generate new dates based on the new hours, keep h the same
         levels_h = self.profiles[0].h     
-        #new_years, new_months, new_days = self._generate_dates(self.profiles[0].year, self.profiles[0].month, self.profiles[0].day, new_hours)
         new_years = new_datetime_list.year.tolist()
         new_months = new_datetime_list.month.tolist()
         new_days = new_datetime_list.day.tolist()
@@ -191,22 +174,24 @@ class EmissionScenario():
 
         # Interpolate the emission scenario into the new time points
         temp_scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
-        #temp_interp_solution_emission_scenario = np.array(
-        #    [np.maximum(interp1d(hours, temp_scenario_2d_array[j, :], kind='linear', fill_value="extrapolate")(new_hours), 0)
-        #    for j in range(temp_scenario_2d_array.shape[0])])
         
         temp_interp_solution_emission_scenario = np.zeros([temp_scenario_2d_array.shape[0],len(new_datetime_list)])
         for j in range(temp_scenario_2d_array.shape[0]):
             df = pd.DataFrame({"datetime": old_datetime_list, "value": temp_scenario_2d_array[j, :]}).set_index("datetime")
-            new_values = df.reindex(df.index.union(new_datetime_list)).interpolate(method="time").loc[new_datetime_list]["value"].tolist()
+            #new_values = df.reindex(df.index.union(new_datetime_list)).interpolate(method="time").loc[new_datetime_list]["value"].tolist()
+            new_values = df.reindex(df.index.union(new_datetime_list), method='bfill').interpolate(method="time").loc[new_datetime_list]["value"].tolist()
+            
             temp_interp_solution_emission_scenario[j,:] = np.maximum(new_values,0)
                 
-        self._clear_profiles()  # Clear existing profiles
+        # Clear existing profiles
+        self._clear_profiles() 
         
         # Add new profiles with interpolated values at new time points. -1 because last time is the time, when eruption is finished.
         for i in range(temp_interp_solution_emission_scenario.shape[1] - 1):
-            self.add_profile(VerticalProfile(levels_h,temp_interp_solution_emission_scenario[:,i],new_years[i],
-                                            new_months[i],new_days[i],new_hours[i]+new_minutes[i]/60.0,new_duration_hours[i] * 3600))
+            p=VerticalProfile(levels_h,temp_interp_solution_emission_scenario[:,i],new_years[i],
+                                            new_months[i],new_days[i],new_hours[i]+new_minutes[i]/60.0,new_duration_hours[i] * 3600)
+            p.setDatetime(new_datetime_list[i])
+            self.add_profile(p)
 
         self.__is_time_adjusted = True
 

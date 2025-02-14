@@ -36,7 +36,7 @@ class WRFNetCDFHandler:
 
     def prepare_file(self,suffix):
         #===========================================
-        self.dst_file = f'wrfchemv_d01.{suffix.strftime("%Y-%m-%d_%H:%M:%S")}.nc'
+        self.dst_file = f'wrfchemv_d01.{suffix.strftime("%Y-%m-%d_%H:%M:%S")}'
         #copy wrfinput to wrfchemv
         if os.path.exists(f'{self.source_dir}{self.dst_file}'):
             os.system(f'rm {self.source_dir}{self.dst_file}')

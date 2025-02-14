@@ -20,7 +20,8 @@ class VerticalProfile():
     def getProfileEmittedMass(self):
         return np.sum(self.values * self.duration_sec)
     
-    #def construct_start_datetime(self):
+    def setDatetime(self,d):
+        self.start_datetime=d.to_pydatetime()
     #    return 
     
     def getProfileStartTimeAndDuration(self):

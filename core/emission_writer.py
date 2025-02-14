@@ -25,7 +25,7 @@ class EmissionWriter:
             y,x,dist = self.__netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
             if not self.__only_once:
-                self.__netcdf_handler.prepare_file(scenario.getStartDateTime().replace(minute=0, second=0, microsecond=0))
+                self.__netcdf_handler.prepare_file(scenario.getStartDateTime())#.replace(minute=0, second=0, microsecond=0))
 
                 self.__netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
                 start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration() # for example, s=165002, d=10 (minutes)
