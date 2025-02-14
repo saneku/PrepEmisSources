@@ -29,8 +29,9 @@ class EmissionWriter:
 
                 self.__netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
                 start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration() # for example, s=165002, d=10 (minutes)
-                self.__netcdf_handler.write_to_cell("ERUP_BEG",start_time,x,y)
-                self.__netcdf_handler.write_to_cell("ERUP_END",duration,x,y)
+                
+                self.__netcdf_handler.write_to_cell("E_START",start_time,0,x,y)
+                self.__netcdf_handler.write_to_cell("E_DURM",duration,0,x,y)
 
                 self.__only_once=True
 
@@ -65,12 +66,12 @@ class EmissionWriter:
                     raise ValueError(f"Unknown material: {material_name}")
 
         print ("--------------------------")
-        print (f"{self.__netcdf_handler.dst_file} has been created.")
+        print (f"{self.__netcdf_handler.dst_file} has been created. Added")
         for scenario in self.__scenarios:    
-            print (f"{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass()} Mt")
+            print (f"\t{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass()} Mt")
         print ("--------------------------")
         print ("Set the following parameters in the namelist.input: ")
         print (f"auxinput13_interval_m = {self.__output_interval}")
         print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
-        print (f"auxinput13_inname = {self.__netcdf_handler.dst_file}")
+        print (f"auxinput13_inname = '{self.__netcdf_handler.dst_file}'")
         print ("--------------------------")

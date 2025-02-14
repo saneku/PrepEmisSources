@@ -142,7 +142,7 @@ class EmissionScenario():
 
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
-                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]. Normalized by total mass = {self.__getScenarioEmittedMass()}')
+                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass()}')
             else:
                 plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]')
         else:

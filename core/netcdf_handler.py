@@ -51,8 +51,8 @@ class WRFNetCDFHandler:
         
         #add variables to wrfchemv file
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as nc_file:
-            self.__add2dVar(nc_file,"ERUP_BEG","START TIME OF ERUPTION","?")
-            self.__add2dVar(nc_file,"ERUP_END","END TIME OF ERUPTION","?")
+            self.__add3dVar(nc_file,"E_START","START TIME OF ERUPTION","?")
+            self.__add3dVar(nc_file,"E_DURM","duration","min")
             self.__add3dVar(nc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")
             self.__add3dVar(nc_file,"E_VSULF","Volcanic Emissions, SULF","mol/m2/h")
             self.__add3dVar(nc_file,"E_QV","Volcanic Emissions, QV","kg/m2/s")
@@ -116,9 +116,9 @@ class WRFNetCDFHandler:
             for time_index,profile in enumerate(profiles):
                 wrf_volc_file.variables[var_name][time_index,:,y,x] = factor * profile.values
 
-    def write_to_cell(self,var_name,value,x,y):
+    def write_to_cell(self,var_name,value,z,x,y):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
-            wrf_volc_file.variables[var_name][:,y,x] = value
+            wrf_volc_file.variables[var_name][:,z,y,x] = value
             
     #start_time,end_time,interval_days,interval_hours,interval_mins):
     def write_times(self,start_times):
