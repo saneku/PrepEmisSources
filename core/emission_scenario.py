@@ -198,8 +198,8 @@ class EmissionScenario():
 
         self.__is_time_adjusted = True
 
-    def interpolate_height(self,new_height):
-        if (self.__is_divided_by_dh == False):
+    def interpolate_height(self,new_height):        
+        if (self.__is_time_adjusted == False):    
             raise ValueError('Time must be adjusted before adjusting height')
         
         if(np.all(new_height[1:] > new_height[:-1])==False):
@@ -212,7 +212,7 @@ class EmissionScenario():
         self.__is_height_adjusted = True
     
     def divide_by_dh(self,dh):        
-        if (self.__is_time_adjusted == False):
+        if (self.__is_height_adjusted == False):
             raise ValueError('Height must be adjusted before dividing by dh')
         
         for profile in self.profiles:

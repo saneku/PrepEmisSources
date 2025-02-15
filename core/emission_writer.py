@@ -36,8 +36,8 @@ class EmissionWriter:
                 self.__only_once=True
 
             #divide by dh to convert from Mt to Mt/m
-            scenario.divide_by_dh(self.__netcdf_handler.getColumn_dH(x,y))
             scenario.interpolate_height(self.__netcdf_handler.getColumn_H(x,y))
+            scenario.divide_by_dh(self.__netcdf_handler.getColumn_dH(x,y))
             #scenario.plot(linestyle='-', color='blue', marker='+')
 
             scenario.normalize_by_total_mass()
@@ -47,48 +47,49 @@ class EmissionWriter:
             
             #compute column depending on the type of material
             #to get emission per m2. division by cell area is "inside" write_column(). 
-            match scenario.type_of_emission.get_name_of_material():
-                case "ash":
-                    #"ug/m2/s"
-                    ash_mass_factors=np.array([0,0,0,0,0,0,0.2,0.4,0.2,0.2])
-                    #todo if (sum(ash_mass_factors)!=1.0) error !
-                    for i in range(1,11):
-                        self.__netcdf_handler.write_column("E_VASH"+str(i),1e18 * ash_mass_factors[i-1], scenario.profiles,x,y)
-                    
-                    '''
-                    ndust=5
-                    nbin_o=10
-                    dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
-                    dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
-                    dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
-                    gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
-                    ra_gocart=np.array([0.1,1.0,1.8,3.0,6.0])
-                    rb_gocart=np.array([1.0,1.8,3.0,6.0,10.0])
-                    for m in range(0,ndust):  # loop over dust size bins
-                        dlogoc = ra_gocart[m]*2.0  # low diameter limit
-                        dhigoc = rb_gocart[m]*2.0  # hi diameter limit
+            material_name = scenario.type_of_emission.get_name_of_material()
+            if material_name == "ash":
+                #"ug/m2/s"
+                ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.3, 0.4, 0.2, 0.1])
+                if not np.isclose(sum(ash_mass_factors), 1.0):
+                    raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
+                
+                for i in range(1,11):
+                    self.__netcdf_handler.write_column("E_VASH"+str(i),1e18 * ash_mass_factors[i-1], scenario.profiles,x,y)
+                
+                '''
+                ndust=5
+                nbin_o=10
+                dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
+                dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
+                dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
+                gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
+                ra_gocart=np.array([0.1,1.0,1.8,3.0,6.0])
+                rb_gocart=np.array([1.0,1.8,3.0,6.0,10.0])
+                for m in range(0,ndust):  # loop over dust size bins
+                    dlogoc = ra_gocart[m]*2.0  # low diameter limit
+                    dhigoc = rb_gocart[m]*2.0  # hi diameter limit
 
-                        for n in range(0,4):
-                            dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
+                    for n in range(0,4):
+                        dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
 
-
-                    #Flip dustfrc_goc10bin_ln because the smallest bin is Bin10, largset is Bin1
-                    dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
-                    for m in range(0,ndust):
-                        for n in range(0,nbin_o):
-                            self.__netcdf_handler.write_column(f"E_VASH{n+1}",1e18 * (dustfrc_goc10bin_ln[m,n] * gocart_fractions[m]), scenario.profiles,x,y)                                        
-                    '''
-                case "so2":
-                    #"ug/m2/min"
-                    self.__netcdf_handler.write_column("E_VSO2",60 * 1e18, scenario.profiles,x,y)
-                case "sulfate":
-                    #"ug/m2/min"
-                    self.__netcdf_handler.write_column("E_VSULF",60 * 1e18, scenario.profiles,x,y)
-                case "watervapor":
-                    #"kg/m2/sec"
-                    self.__netcdf_handler.write_column("E_QV",1e9, scenario.profiles,x,y)
-                case _:
-                    raise ValueError(f"Unknown material: {material_name}")
+                #Flip dustfrc_goc10bin_ln because the smallest bin is Bin10, largset is Bin1
+                dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
+                for m in range(0,ndust):
+                    for n in range(0,nbin_o):
+                        self.__netcdf_handler.write_column(f"E_VASH{n+1}",1e18 * (dustfrc_goc10bin_ln[m,n] * gocart_fractions[m]), scenario.profiles,x,y)                                        
+                '''
+            elif material_name == "so2":
+                #"ug/m2/min"
+                self.__netcdf_handler.write_column("E_VSO2",60 * 1e18, scenario.profiles,x,y)
+            elif material_name == "sulfate":
+                #"ug/m2/min"
+                self.__netcdf_handler.write_column("E_VSULF",60 * 1e18, scenario.profiles,x,y)
+            elif material_name == "watervapor":
+                #"kg/m2/sec"
+                self.__netcdf_handler.write_column("E_QV",1e9, scenario.profiles,x,y)
+            else:
+                raise ValueError(f"Unknown material: {material_name}")
 
         print ("--------------------------")
         print (f"{self.__netcdf_handler.dst_file} has been created. Added")
