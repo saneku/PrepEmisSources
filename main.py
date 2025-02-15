@@ -8,10 +8,10 @@ import numpy as np
 if __name__ == "__main__":
     
     scenarios = [
-                EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=65,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8),
+                EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8),
                                                     './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
 
-                EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15,lat=15.1429,lon=120.3496),
+                EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15.54,lat=15.1429,lon=120.3496),
                                                      './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 #Emission_WaterVapor(mass_mt=150,lat=15,lon=165)

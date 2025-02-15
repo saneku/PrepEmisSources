@@ -171,6 +171,7 @@ class EmissionScenario():
         new_hours = new_datetime_list.hour.tolist()
         new_minutes = new_datetime_list.minute.tolist()
         new_duration_hours = np.diff(new_datetime_list)/ np.timedelta64(1, 'h')
+        new_duration_hours = np.append(new_duration_hours,0)
 
         # Interpolate the emission scenario into the new time points
         temp_scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
@@ -178,20 +179,22 @@ class EmissionScenario():
         temp_interp_solution_emission_scenario = np.zeros([temp_scenario_2d_array.shape[0],len(new_datetime_list)])
         for j in range(temp_scenario_2d_array.shape[0]):
             df = pd.DataFrame({"datetime": old_datetime_list, "value": temp_scenario_2d_array[j, :]}).set_index("datetime")
-            #new_values = df.reindex(df.index.union(new_datetime_list)).interpolate(method="time").loc[new_datetime_list]["value"].tolist()
             new_values = df.reindex(df.index.union(new_datetime_list), method='bfill').interpolate(method="time").loc[new_datetime_list]["value"].tolist()
-            
             temp_interp_solution_emission_scenario[j,:] = np.maximum(new_values,0)
-                
+        
         # Clear existing profiles
         self._clear_profiles() 
         
         # Add new profiles with interpolated values at new time points. -1 because last time is the time, when eruption is finished.
-        for i in range(temp_interp_solution_emission_scenario.shape[1] - 1):
+        for i in range(temp_interp_solution_emission_scenario.shape[1]):
             p=VerticalProfile(levels_h,temp_interp_solution_emission_scenario[:,i],new_years[i],
                                             new_months[i],new_days[i],new_hours[i]+new_minutes[i]/60.0,new_duration_hours[i] * 3600)
             p.setDatetime(new_datetime_list[i])
             self.add_profile(p)
+
+        #zero emissions for last profile
+        self.profiles[-1].values *=0
+        self.profiles[-1].erup_beg=0
 
         self.__is_time_adjusted = True
 

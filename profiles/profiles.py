@@ -16,6 +16,16 @@ class VerticalProfile():
         self.start_datetime = datetime(int(self.year),int(self.month), int(self.day), 
                                 int(self.hour),int((self.hour - int(self.hour))*60.0))
         #self.construct_start_datetime()
+        
+        if calendar.isleap(self.year):
+            K = 1
+        else:
+            K = 2
+
+        beg_jul = ((275 * self.month)/9) - K*((self.month+9)/12) + self.day - 30
+        beg_jul = int(beg_jul)
+        self.erup_beg = beg_jul * 1000. + self.hour
+        
        
     def getProfileEmittedMass(self):
         return np.sum(self.values * self.duration_sec)
@@ -25,16 +35,7 @@ class VerticalProfile():
     #    return 
     
     def getProfileStartTimeAndDuration(self):
-        if calendar.isleap(self.year):
-            K = 1
-        else:
-            K = 2
-
-        beg_jul = ((275 * self.month)/9) - K*((self.month+9)/12) + self.day - 30
-        beg_jul = int(beg_jul)
-        erup_beg = beg_jul * 1000. + self.hour
-
-        return erup_beg,self.duration_sec/60.0
+        return self.erup_beg,self.duration_sec/60.0
     
     #@abstractmethod
     #def generate_profile(self, height_levels):
