@@ -123,7 +123,6 @@ class VerticalProfile_Umbrella(VerticalProfile):
 
         #- parabolic vertical distribution between k_initial and k_final
         kk4 = k_final - k_initial+2
-        #vert_mass_dist=np.zeros(len(z_at_w)-1)
 
         for ko in range(1,kk4):
             kl = ko + k_initial - 1
