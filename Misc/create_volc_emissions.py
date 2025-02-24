@@ -152,6 +152,39 @@ for m in range(0,ndust):  # loop over dust size bins
 dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
 print (DataFrame(dustfrc_goc10bin_ln))
 
+print (gocart_fractions)
+
+for i in range(6,10)[::-1]:
+    print (f"\nAsh{i+1}=",end='')
+    for j in range(0,5):
+        if (dustfrc_goc10bin_ln[j,i]!=0.0):
+            print (f"dust{j+1} * {dustfrc_goc10bin_ln[j,i]} + ",end='')
+
+print ("\n")
+total_sum=0
+for i in range(6,10)[::-1]:
+    sum=0
+    for j in range(0,5):
+        if (dustfrc_goc10bin_ln[j,i]!=0.0):
+            sum+=gocart_fractions[j] * dustfrc_goc10bin_ln[j,i]
+
+    print (f"Ash{i+1}={sum}")
+    total_sum+=sum
+
+print(total_sum)
+
+#        ash1 ash2  3    4   ash5  6      ash7     ash8       ash9     ash10
+# dust1  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.000000  0.000000  1.000000
+# dust2  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.000000  0.000000  1.000000
+# dust3  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.000000  0.840172  0.159828
+# dust4  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.619178  0.380822  0.000000
+# dust5  0.0  0.0  0.0  0.0  0.0  0.0  0.483257  0.516743  0.000000  0.000000
+
+exit()
+
+#================================================================================
+#ERUPTION PARAMS
+#================================================================================
 #one_day_in_seconds=86400                   #1 day = 86400 sec
 volc_lats=[7.72, 9.12, 18.55, 17.72, 18.38, 18.67, 6.95, 13.94, 17.84, 7.20]#[15.150110]
 volc_lons=[117.26, 102.01, 105.30, 81.81, 87.85, 82.28, 113.72, 79.87, 103.24, 99.12]#[120.346512]

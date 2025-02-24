@@ -49,8 +49,12 @@ class EmissionWriter:
             #to get emission per m2. division by cell area is "inside" write_column(). 
             material_name = scenario.type_of_emission.get_name_of_material()
             if material_name == "ash":
+                
+                #Rescaled GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
+                #Ash1...6=0 Ash7=0.212 Ash8=0.506 Ash9=0.251 Ash10=0.0312
+                
                 #"ug/m2/s"
-                ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.3, 0.4, 0.2, 0.1])
+                ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
                 if not np.isclose(sum(ash_mass_factors), 1.0):
                     raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
                 
