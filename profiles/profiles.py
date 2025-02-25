@@ -60,7 +60,6 @@ class VerticalProfile():
     #def generate_profile(self, height_levels):
     #    pass
 
-
 class VerticalProfile_Uniform(VerticalProfile):
     def __init__(self, z_at_w, year, month, day, hour, duration_sec, value=1.0,h_min=5000.0,h_max=10000.0):
         profile = value * np.ones(len(z_at_w))

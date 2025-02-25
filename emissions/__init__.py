@@ -1,4 +1,5 @@
-from .emissions import Emission,Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
-#from .types import 
+package_name = "emissions"
 
-__all__ = ["EmissionDistribution", "Emission_Ash", "Emission_SO2", "Emission_Sulfate", "Emission_WaterVapor"]
+from .emissions import Emission,Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
+
+__all__ = ["Emission","Emission_Ash", "Emission_SO2", "Emission_Sulfate", "Emission_WaterVapor"]

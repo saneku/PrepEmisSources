@@ -5,7 +5,7 @@ import xarray as xr
 import datetime
 import pandas as pd
 
-class WRFNetCDFHandler:
+class WRFNetCDFWriter:
     def __init__(self, source_dir='./'):
         self.source_dir = source_dir
         self.orgn_wrf_input_file = "wrfinput_d01"
@@ -22,7 +22,7 @@ class WRFNetCDFHandler:
             dy = wrfinput.getncattr('DY')
             dx = wrfinput.getncattr('DX')
             self.surface = (dx/MAPFAC_MX)*(dy/MAPFAC_MY)       #surface in m2
-
+            #todo: add surface to wrfchemv file
             self.__h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
             self.__dh = np.diff(self.__h,axis=0)                #dh in m
 
@@ -99,7 +99,7 @@ class WRFNetCDFHandler:
                     dist0=dist
                     jj=j
                     ii=i
-        return ii,jj,dist0
+        return ii,jj
 
     def getColumn_H(self, x, y):
         return np.array(self.__h[:,y,x])

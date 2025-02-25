@@ -1,20 +1,17 @@
-from emissions.emissions import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
-from core.netcdf_handler import WRFNetCDFHandler
-from core.emission_scenario import EmissionScenario_InvertedPinatubo,EmissionScenario_MixOfProfiles
-from core.emission_writer import EmissionWriter
+#from emissions.emissions import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
 
+from emissions import *
+
+#from core.netcdf_handler import WRFNetCDFHandler
+#from core.emission_scenario import EmissionScenario_InvertedPinatubo,EmissionScenario_MixOfProfiles
+#from core.emission_writer import EmissionWriter
+
+from core import *# WRFNetCDFHandler, EmissionScenario_InvertedPinatubo, EmissionScenario_MixOfProfiles, EmissionWriter
 import numpy as np
 
 if __name__ == "__main__":
     
-    ash = EmissionScenario_MixOfProfiles(Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8))
-    
-    for i in ash.getProfiles():
-        i.plot()
-        print (sum(i.values))
-    
-    exit()
-    
+    #example 2
     scenarios = [
                 EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8),
                                                     './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
@@ -25,14 +22,13 @@ if __name__ == "__main__":
                 #Emission_WaterVapor(mass_mt=150,lat=15,lon=165)
                 ]
     #scenarios[0].plot(linestyle='--', color='grey', marker='')
-
-    netcdf_handler = WRFNetCDFHandler(source_dir="./")
-    #print(netcdf_handler)
+    netcdf_handler = WRFNetCDFWriter(source_dir="./")
     
-    emission_writer = EmissionWriter(scenarios, netcdf_handler, 10)
+    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write_to_file()
     
-    
+#todo:
+#add check of emissions in wrfchem file
     
 #todo    
 #df['rates']=pow(df['Height']/2,1/0.241)	#formula (1) from Mastin 2009 (kg/s)
@@ -41,6 +37,7 @@ if __name__ == "__main__":
 
 
 '''
+todo:
 from scipy.integrate import quad
 
 #for Suzuki integrand

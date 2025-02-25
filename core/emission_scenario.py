@@ -1,13 +1,16 @@
 #from abc import ABC, abstractmethod
 import pickle
 import numpy as np
-from profiles.profiles import VerticalProfile,VerticalProfile_Umbrella,VerticalProfile_Uniform
+#from profiles.profiles import VerticalProfile,VerticalProfile_Umbrella,VerticalProfile_Uniform
+from profiles import *
 import pandas as pd
 import math
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-from emissions.emissions import Emission#Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
+#from emissions.emissions import Emission#Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
+
+from emissions import *
 
 class EmissionScenario():
     def __init__(self,type_of_emission):
@@ -43,6 +46,7 @@ class EmissionScenario():
     def _clear_profiles(self):
         self.profiles = []
 
+    #todo replace all self.profiles by this method
     def getProfiles(self):
         for p in self.profiles:
             yield p
@@ -246,48 +250,32 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
                                             months[i],days[i],hours[i],duration_sec[i]))
 
 
-
 class EmissionScenario_MixOfProfiles(EmissionScenario):
     def __init__(self, type_of_emission):
-        super().__init__(type_of_emission)
-        
-        #staggerred_h is from the paper
-        staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
-                            1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
-                            8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
-                            16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
-                            23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 
-                            32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
-                            42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
-
-        self.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,3,7200,15000,1000,0.55))
-        self.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,5,7200,25000,1000,0.95))
-        self.add_profile(VerticalProfile_Uniform(staggerred_h,1991,6,15,7,7200,1.0,5000.0,10000.0))
-        self.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,9,7200,15000,1000,0.65))
+        super().__init__(type_of_emission)    
 
 
 
+'''
+def read_eruption_file(self, filename):
+    # Read the file
+    with open(filename, 'r') as f:
+        lines = f.readlines()
 
-    '''
-    def read_eruption_file(self, filename):
-        # Read the file
-        with open(filename, 'r') as f:
-            lines = f.readlines()
+    # Extract dimensions from the first two lines
+    self.rows = int(lines[0].strip())
+    self.cols = int(lines[1].strip())
+    
+    self.years = int(lines[2].strip())
+    self.months = int(lines[3].strip())
+    self.days = int(lines[4].strip())
+    self.hours = int(lines[5].strip())
+    self.duration_sec = int(lines[6].strip())
 
-        # Extract dimensions from the first two lines
-        self.rows = int(lines[0].strip())
-        self.cols = int(lines[1].strip())
-        
-        self.years = int(lines[2].strip())
-        self.months = int(lines[3].strip())
-        self.days = int(lines[4].strip())
-        self.hours = int(lines[5].strip())
-        self.duration_sec = int(lines[6].strip())
-
-        # Extract the array data starting from the 8th line (index 7) for 'rows' number of lines
-        emission_scenario = []
-        for line in lines[7 : 7 + self.rows]:
-            row = list(map(float, line.strip().split()))
-            array_data.append(row)
-        # array_data is now a 2D list (rows x cols) containing the values from the file
-    '''
+    # Extract the array data starting from the 8th line (index 7) for 'rows' number of lines
+    emission_scenario = []
+    for line in lines[7 : 7 + self.rows]:
+        row = list(map(float, line.strip().split()))
+        array_data.append(row)
+    # array_data is now a 2D list (rows x cols) containing the values from the file
+'''
