@@ -25,7 +25,7 @@ if __name__ == "__main__":
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
     
     emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
-    emission_writer.write_to_file()
+    emission_writer.write()
     
 #todo:
 #add check of emissions in wrfchem file

@@ -102,8 +102,8 @@ class EmissionScenario():
     #    return self.profiles[-1].duration_sec/3600
 
     def getScenarioEmittedMass(self):
-        if (self.__is_divided_by_dh==False):
-            raise ValueError('Divide by dh before using getTotalEmittedMass')
+        #if (self.__is_divided_by_dh==False):
+        #    raise ValueError('Divide by dh before using getTotalEmittedMass')
 
         return np.sum([profile.getProfileEmittedMass() for profile in self.profiles])
 
@@ -112,8 +112,8 @@ class EmissionScenario():
             profile.values = profile.values * scale
 
     def normalize_by_total_mass(self):
-        if (self.__is_divided_by_dh == False):
-            raise ValueError('Divide by dh before using normalize_by_total_mass')
+        #if (self.__is_divided_by_dh == False):
+        #    raise ValueError('Divide by dh before using normalize_by_total_mass')
         
         mass_before=self.getScenarioEmittedMass()
         scale = self.type_of_emission.mass_Mt/mass_before
