@@ -16,7 +16,6 @@ class VerticalProfile():
         
         self.start_datetime = datetime(int(self.year),int(self.month), int(self.day), 
                                 int(self.hour),int((self.hour - int(self.hour))*60.0))
-        #self.construct_start_datetime()
         
         if calendar.isleap(self.year):
             K = 1
@@ -94,8 +93,35 @@ class VerticalProfile_Uniform(VerticalProfile):
         super().__init__(z_at_w,profile,year,month,day,hour,duration_sec)
 
 class VerticalProfile_Suzuki(VerticalProfile):
-    def generate_profile(self, height_levels):
-        return np.exp(-np.linspace(0, 1, height_levels))
+    pass
+    #def generate_profile(self, height_levels):
+    #    return np.exp(-np.linspace(0, 1, height_levels))
+    
+    '''
+    from scipy.integrate import quad
+
+    #for Suzuki integrand
+    k_suzuki=4.0
+    H_suzuki=0.0 #top height of the cloud
+
+    def suzuku_integrand(z):
+        return (k_suzuki*k_suzuki*(1-(z/H_suzuki))*np.exp(k_suzuki*((z/H_suzuki)-1)))/(H_suzuki*(1-(1+k_suzuki)*np.exp(-k_suzuki)))
+
+	#1 Vertical mass rate redistribution according to Suzuki
+	x_b_interp=[]
+	for i in range(0,len(heights_on_level_interfaces)-1):
+	   bs, err = quad(suzuku_integrand, heights_on_level_interfaces[i]/1000.0,heights_on_level_interfaces[i+1]/1000.0)
+	   x_b_interp.append(bs)
+	x_b_interp=np.asarray(x_b_interp)
+
+	x_b_interp=rates[k]*x_b_interp	#
+
+	indexes=np.where(x_b_interp<0)
+	x_b_interp[indexes]=1.0e-06
+	print ("{:0.6f}".format(np.sum(x_b_interp)))
+
+	indexes=np.where(x_b_interp>treshold)[0]
+	'''
 
 class VerticalProfile_Umbrella(VerticalProfile):
     def __init__(self, z_at_w, year, month, day, hour, duration_sec, emiss_height=10000, vent_h=500, percen_mass_umbrela=0.75):

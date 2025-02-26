@@ -8,7 +8,7 @@ import numpy as np
 class EmissionWriter():
     def __init__(self, scenarios, netcdf_handler,output_interval=60):
         
-        self.__output_interval = output_interval  #minutes
+        self._output_interval = output_interval  #minutes
         self._only_once=False
         
         for i,scenario in enumerate(scenarios):
@@ -33,13 +33,12 @@ class EmissionWriter():
             print ("\n\n--------------------------")
             print (f"{self._netcdf_handler.dst_file} has been created. Added")
             for scenario in self._getScenarios():    
-                print (f"\t{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass()} Mt")
+                print (f"\t{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass():.3f} Mt")
 
             print ("--------------------------")
             print ("Set the following parameters in the namelist.input: ")
-            print (f"auxinput13_interval_m = {self.__output_interval}")
-            #print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
-            print (f"frames_per_auxinput13 = {self._getScenarios()[0].getNumberOfProfiles(  )}")
+            print (f"auxinput13_interval_m = {self._output_interval}")
+            print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
             print (f"auxinput13_inname = '{self._netcdf_handler.dst_file}'")
             print ("--------------------------")
             #print(f"Method {func.__name__} executed")  # Post-execution behavior
@@ -50,12 +49,17 @@ class EmissionWriter():
     def write(self):
         raise NotImplementedError("Abstract method 'write' must be implemented in subclass of EmissionWriter")
 
+    #todo:
+    #add check of emissions in wrfchem file
+
+
+
 class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
 
     @EmissionWriter._postAmbula
     def write(self):
         for scenario in self._getScenarios():
-            scenario.interpolate_time(self.__output_interval) # minutes time intervals to interpolate to
+            scenario.interpolate_time(self._output_interval) # minutes time intervals to interpolate to
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
             if not self._only_once:
