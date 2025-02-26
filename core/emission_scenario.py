@@ -119,7 +119,8 @@ class EmissionScenario():
         scale = self.type_of_emission.mass_Mt/mass_before
         self.__scaleProfiles(scale)
         mass_after=self.getScenarioEmittedMass()
-        print(f'Mass before normalisation: {mass_before} Mt, Mass after: {mass_after} Mt')
+        print(f'\n{self.type_of_emission.get_name_of_material()} mass before: \
+              {mass_before:.3f} Mt, and after: {mass_after:.3f} Mt normalisation')
         
         self.__is_normalized_by_total_mass = True
     
@@ -248,7 +249,6 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))
-
 
 class EmissionScenario_MixOfProfiles(EmissionScenario):
     def __init__(self, type_of_emission):

@@ -49,10 +49,6 @@ class EmissionWriter():
     def write(self):
         raise NotImplementedError("Abstract method 'write' must be implemented in subclass of EmissionWriter")
 
-    #todo:
-    #add check of emissions in wrfchem file
-
-
 
 class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
 
@@ -76,43 +72,12 @@ class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
             #divide by dh to convert from Mt to Mt/m
             scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
             scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
+            
             #scenario.plot(linestyle='-', color='blue', marker='+')
-
             scenario.normalize_by_total_mass()
             
-            #compute column depending on the type of material
-            #to get emission per m2. division by cell area is "inside" write_column(). 
             material_name = scenario.type_of_emission.get_name_of_material()
             self._netcdf_handler.write_material(material_name,scenario.profiles,x,y)
-            
-            '''
-            if material_name == "ash":
-                
-                #Rescaled GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
-                #Ash1...6=0 Ash7=0.212 Ash8=0.506 Ash9=0.251 Ash10=0.0312
-                
-                #"ug/m2/s"
-                ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
-                if not np.isclose(sum(ash_mass_factors), 1.0):
-                    raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
-                
-                for i in range(1,11):
-                    self.__netcdf_handler.write_column("E_VASH"+str(i),1e18 * ash_mass_factors[i-1], scenario.profiles,x,y)
-                
-            elif material_name == "so2":
-                #"ug/m2/min"
-                self.__netcdf_handler.write_column("E_VSO2",60 * 1e18, scenario.profiles,x,y)
-            elif material_name == "sulfate":
-                #"ug/m2/min"
-                self.__netcdf_handler.write_column("E_VSULF",60 * 1e18, scenario.profiles,x,y)
-            elif material_name == "watervapor":
-                #"kg/m2/sec"
-                self.__netcdf_handler.write_column("E_QV",1e9, scenario.profiles,x,y)
-            else:
-                raise ValueError(f"Unknown material: {material_name}")
-            '''
-        #self._postAmbula()
-
 
 
 class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
@@ -124,12 +89,9 @@ class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
 
             if not self._only_once:
                 self._netcdf_handler.prepare_file(scenario.getStartDateTime())
-
                 self._netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
                 start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration()
-                
                 self._netcdf_handler.write_to_cell("E_START",start_time,0,x,y)
-
                 self._only_once=True
 
             #scenario.plot(linestyle='-', color='blue', marker='+')

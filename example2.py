@@ -21,3 +21,5 @@ if __name__ == "__main__":
     
     emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
+    
+    netcdf_handler.plot_how_much_was_written()

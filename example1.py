@@ -17,15 +17,18 @@ if __name__ == "__main__":
     
     staggerred_h = netcdf_handler.getColumn_H(i,j)
     
-    ash_scenario.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,3,7200,15000,1000,0.55))
-    ash_scenario.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,5,7200,25000,1000,0.95))
-    ash_scenario.add_profile(VerticalProfile_Zero(staggerred_h,1991,6,15,7,7200))
-    ash_scenario.add_profile(VerticalProfile_Uniform(staggerred_h,1991,6,15,9,7200,1.0,5000.0,10000.0))
-    ash_scenario.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,12,7200,15000,1000,0.65))
+    ash_scenario.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,3,7200,15000,1000,0.55))    
+    ash_scenario.add_profile(VerticalProfile_Zero(staggerred_h,1991,6,15,5,7200))
+    ash_scenario.add_profile(VerticalProfile_Umbrella(staggerred_h,1991,6,15,7,7200,25000,1000,0.95))
+    ash_scenario.add_profile(VerticalProfile_Zero(staggerred_h,1991,6,15,9,7200))
+    ash_scenario.add_profile(VerticalProfile_Uniform(staggerred_h,1991,6,15,11,7200,1.0,5000.0,10000.0))
+    ash_scenario.add_profile(VerticalProfile_Zero(staggerred_h,1991,6,15,13,7200))  #should be the last one
 
     #for i in ash.getProfiles():
     #    i.plot()
     #    print (sum(i.values))
-    
+
     emission_writer = EmissionWriter_UniformInTimeProfiles([ash_scenario], netcdf_handler, 120)
     emission_writer.write()
+    
+    netcdf_handler.plot_how_much_was_written()

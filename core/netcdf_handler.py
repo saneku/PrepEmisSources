@@ -4,12 +4,19 @@ import os
 import xarray as xr
 import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 
 class WRFNetCDFWriter:
     def __init__(self, source_dir='./'):
         self.source_dir = source_dir
         self.orgn_wrf_input_file = "wrfinput_d01"
-        #self.dst_file = "wrfchemv_d01"
+        
+        self.__emissions = {
+                "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "total": []},
+                "so2": {"var": "E_VSO2", "mass_factor": 1e18, "time_factor": 60, "total": []},
+                "sulf": {"var": "E_VSULF", "mass_factor": 1e18, "time_factor": 60, "total": []},
+                "qv": {"var": "E_QV", "mass_factor": 1e9, "time_factor": 1, "total": []}}
         
         #Read data from wrfinput data
         print (f'Open {self.source_dir}{self.orgn_wrf_input_file}')
@@ -31,7 +38,7 @@ class WRFNetCDFWriter:
             #self.h and self.dh are 3d variable with dimensions (bottom_top, south_north, west_east)
 
     def __str__(self):
-        return f"NetCDFHandler(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.__h.shape})"
+        return f"WRFNetCDFWriter(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.__h.shape})"
 
     def prepare_file(self,suffix):
         #===========================================
@@ -43,7 +50,7 @@ class WRFNetCDFWriter:
         ds = xr.open_dataset(f'{self.source_dir}{self.orgn_wrf_input_file}')
         ds_var = ds[['PH','PHB','T','Times']]
         
-        #make a mark in the history todo; add more information
+        #make a mark in the history todo; add more information todo
         ds_var.attrs["HISTORY"] = ds_var.attrs.get("HISTORY", "") + f". Created by VolcanicEmissions on {datetime.datetime.utcnow().isoformat()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
@@ -124,7 +131,7 @@ class WRFNetCDFWriter:
     #def getColumn_Area(self, x, y): #m2
     #    return np.array(self.surface[y,x])
     
-    def write_column(self,var_name,factor,profiles,x,y):
+    def __write_column(self,var_name,factor,profiles,x,y):
         factor = factor/np.array(self.area[y,x])
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as wrf_volc_file:
             for time_index,profile in enumerate(profiles):
@@ -158,29 +165,61 @@ class WRFNetCDFWriter:
                     for i,_ in enumerate(aux_times):
                         var[i,:]=var[0,:]
 
-    def write_material(self, material_name,profiles,x,y):
-        if material_name == "ash":
+    def write_material(self, material_name, profiles, x, y):                       
             #Rescaled GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
             #Ash1...6=0 Ash7=0.212 Ash8=0.506 Ash9=0.251 Ash10=0.0312
             
-            #"ug/m2/s"
+            #todo: get dynamically calculated ash_mass_factors
             ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
-            if not np.isclose(sum(ash_mass_factors), 1.0):
-                raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
             
-            for i in range(1,11):
-                self.write_column("E_VASH"+str(i),1e18 * ash_mass_factors[i-1], profiles,x,y)
-        elif material_name == "so2":
-            #"ug/m2/min"
-            self.write_column("E_VSO2",60 * 1e18, profiles,x,y)
-        elif material_name == "sulfate":
-            #"ug/m2/min"
-            self.write_column("E_VSULF",60 * 1e18, profiles,x,y)
-        elif material_name == "watervapor":
-            #"kg/m2/sec"
-            self.write_column("E_QV",1e9, profiles,x,y)
-        else:
-            raise ValueError(f"Unknown material: {material_name}")
+            if material_name not in self.__emissions:
+                raise ValueError(f"Unknown material: {material_name}")
+
+            mtrl = self.__emissions[material_name]
+            
+            #so2,sulf are in "ug/m2/min"
+            #water vaport in "kg/m2/s"
+            #ash in "ug/m2/s"
+            
+            if material_name == "ash":
+                if not np.isclose(sum(ash_mass_factors), 1.0):
+                    raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
+                for i in range(1, 11):
+                    self.__write_column(f"{mtrl['var']}{i}",mtrl['time_factor'] * mtrl['mass_factor'] * ash_mass_factors[i-1], profiles, x, y)
+            else:
+                self.__write_column(f"{mtrl['var']}", mtrl['time_factor'] * mtrl['mass_factor'], profiles, x, y)
+
+
+    def plot_how_much_was_written(self):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}','r') as wrf_volc_file:
+            times = [datetime.datetime.strptime(str(b''.join(t)), "b'%Y-%m-%d_%H:%M:%S'") for t in wrf_volc_file.variables['Times'][:]]
+            duration_sec = list(np.diff(times).astype('timedelta64[s]').astype(int))
+            duration_sec.append(duration_sec[-1]) #add the last one, assuming all delta's are the same
+            
+            total = {key: [] for key in self.__emissions}
+            
+            for time_idx, curr_time in enumerate(times):
+                print(time_idx, curr_time)
+                for key, data in self.__emissions.items():
+                    if key == "ash":
+                        total_emission = np.sum(np.sum(wrf_volc_file.variables[f"{data['var']}{i}"][time_idx, :] * self.area) for i in range(1, 11))
+                    else:
+                        total_emission = np.sum(wrf_volc_file.variables[data["var"]][time_idx, :] * self.area)
+                    #for plotting
+                    total[key].append(total_emission * duration_sec[time_idx] / data["time_factor"] / data["mass_factor"])
+
+            times.append(times[-1] + datetime.timedelta(seconds=int(duration_sec[-1])))
+            plt.title("Accumulated mass")
+            for key, data in total.items():
+                plt.plot(times, [0]+list(np.cumsum(data)), label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
+
+            plt.ylabel('Mass, $Mt$')
+            plt.xlabel('Time')
+            plt.legend(loc="best")
+            plt.grid(True, alpha=0.3)
+            plt.ylim([0, 80])
+            plt.gca().get_xaxis().set_major_formatter(DateFormatter('%H:%M'))
+            plt.show()
 
 
 '''
