@@ -166,11 +166,17 @@ class WRFNetCDFWriter:
                         var[i,:]=var[0,:]
 
     def write_material(self, material_name, profiles, x, y):                       
-            #Rescaled GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
+            #Rescaled from GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
             #Ash1...6=0 Ash7=0.212 Ash8=0.506 Ash9=0.251 Ash10=0.0312
-            
-            #todo: get dynamically calculated ash_mass_factors
             ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
+            
+            #computed from parameters of the lognormal distribution
+            #mu = np.log(2*2.4)  # 2.4 median radii!!!
+            #sigma = np.log(1.8)
+            
+            #todo:look at sect 1 and sect 2
+
+            ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
             
             if material_name not in self.__emissions:
                 raise ValueError(f"Unknown material: {material_name}")
@@ -199,7 +205,7 @@ class WRFNetCDFWriter:
             total = {key: [] for key in self.__emissions}
             
             for time_idx, curr_time in enumerate(times):
-                print(time_idx, curr_time)
+                #print(time_idx, curr_time)
                 for key, data in self.__emissions.items():
                     if key == "ash":
                         total_emission = np.sum(np.sum(wrf_volc_file.variables[f"{data['var']}{i}"][time_idx, :] * self.area) for i in range(1, 11))
@@ -214,7 +220,7 @@ class WRFNetCDFWriter:
                 plt.plot(times, [0]+list(np.cumsum(data)), label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
 
             plt.ylabel('Mass, $Mt$')
-            plt.xlabel('Time')
+            plt.xlabel('Time, UTC')
             plt.legend(loc="best")
             plt.grid(True, alpha=0.3)
             plt.ylim([0, 80])
