@@ -51,6 +51,7 @@ class WRFNetCDFWriter:
         ds_var = ds[['PH','PHB','T','Times']]
         
         #make a mark in the history todo; add more information todo
+        #store amount of material emitted
         ds_var.attrs["HISTORY"] = ds_var.attrs.get("HISTORY", "") + f". Created by VolcanicEmissions on {datetime.datetime.utcnow().isoformat()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================

@@ -46,10 +46,9 @@ class EmissionScenario():
     def _clear_profiles(self):
         self.profiles = []
 
-    #todo replace all self.profiles by this method
-    def getProfiles(self):
-        for p in self.profiles:
-            yield p
+    #def getProfiles(self):
+    #    for p in self.profiles:
+    #        yield p
 
     def __repr__(self):
         return f"EmissionScenario(profiles={self.__list_profiles()})"
@@ -80,10 +79,6 @@ class EmissionScenario():
         #    raise ValueError('Time must be adjusted before using getEndDateTime')
         return self.profiles[-1].start_datetime + timedelta(seconds=int(self.profiles[-1].duration_sec))
         #return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour),int((self.profiles[-1].hour - int(self.profiles[-1].hour))*60.0)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
-    
-    #todo: remove it
-    #def getDuration(self):
-    #    return (self.getEndDateTime() - self.getStartDateTime()).total_seconds() 
     
     def get_profiles_Decimal_StartTimeAndDuration(self):
         start_times = []

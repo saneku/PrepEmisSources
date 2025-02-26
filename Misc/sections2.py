@@ -51,4 +51,4 @@ print ("MASS redistribution: "+(' '.join(str("{:.3f}".format(x)) for x in xmas_s
 print (np.sum(xmas_sect))
 
 #Vash10, Vash9, Vash8, ...., Vash1
-#1.726e-02 1.577e-01 4.216e-01 3.261e-01 7.262e-02 4.541e-03 7.733e-05 3.492e-07 4.103e-10 1.239e-13
+#0.017 0.158 0.422 0.326 0.073 0.005 0.000 0.000 0.000 0.000
