@@ -17,7 +17,7 @@ class EmissionWriter():
         self.__scenarios = scenarios
 
         if not isinstance(netcdf_handler, WRFNetCDFWriter):
-            raise TypeError("netcdf_handler must be an instance of NetCDFHandler")
+            raise TypeError("netcdf_handler must be an instance of WRFNetCDFWriter")
 
         self._netcdf_handler = netcdf_handler
     
@@ -31,14 +31,15 @@ class EmissionWriter():
         def wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
             print ("\n\n--------------------------")
-            print (f"{self._netcdf_handler.dst_file} has been created. Added")
-            for scenario in self._getScenarios():    
-                print (f"\t{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass():.3f} Mt")
+            print (f"{self._netcdf_handler.dst_file} has been created.")
+            #for scenario in self._getScenarios():    
+            #    print (f"\t{scenario.type_of_emission.get_name_of_material():}: {scenario.getScenarioEmittedMass():.3f} Mt")
 
             print ("--------------------------")
             print ("Set the following parameters in the namelist.input: ")
             print (f"auxinput13_interval_m = {self._output_interval}")
-            print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
+            #print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
+            print (f"frames_per_auxinput13 = {self._getScenarios()[0].getNumberOfProfiles()}")
             print (f"auxinput13_inname = '{self._netcdf_handler.dst_file}'")
             print ("--------------------------")
             #print(f"Method {func.__name__} executed")  # Post-execution behavior

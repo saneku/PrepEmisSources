@@ -1,7 +1,6 @@
 from core import *
 from emissions import *
 from profiles import *
-import numpy as np
 
 
 #example 1
@@ -24,9 +23,9 @@ if __name__ == "__main__":
     ash_scenario.add_profile(VerticalProfile_Uniform(staggerred_h,1991,6,15,11,7200,1.0,5000.0,10000.0))
     ash_scenario.add_profile(VerticalProfile_Zero(staggerred_h,1991,6,15,13,7200))  #should be the last one
 
-    #for i in ash.getProfiles():
-    #    i.plot()
-    #    print (sum(i.values))
+    #todo: add last profile with zero values independent of the user
+
+    #ash_scenario.plot()
 
     emission_writer = EmissionWriter_UniformInTimeProfiles([ash_scenario], netcdf_handler, 120)
     emission_writer.write()

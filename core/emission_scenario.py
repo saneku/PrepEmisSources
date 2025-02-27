@@ -1,14 +1,12 @@
 #from abc import ABC, abstractmethod
 import pickle
 import numpy as np
-#from profiles.profiles import VerticalProfile,VerticalProfile_Umbrella,VerticalProfile_Uniform
 from profiles import *
 import pandas as pd
 import math
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-#from emissions.emissions import Emission#Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
 
 from emissions import *
 
@@ -50,35 +48,22 @@ class EmissionScenario():
     #    for p in self.profiles:
     #        yield p
 
+    def __str__(self):
+        return self.__class__.__name__
+
     def __repr__(self):
         return f"EmissionScenario(profiles={self.__list_profiles()})"
-    
-    #def _generate_dates(self,start_year, start_month, start_day, hours_list):
-    #    start_date = datetime(start_year, start_month, start_day)
-    #    years, months, days = [], [], []
-    #    for hours in hours_list:
-    #        new_date = start_date + timedelta(hours=hours)
-    #        years.append(new_date.year)
-    #        months.append(new_date.month)
-    #        days.append(new_date.day)
-        
-    #    return years, months, days
     
     def __print_vector(self,vector,sep=' ',f="{:0.6e}"):
         print((sep.join(f.format(x) for x in vector)))
     
     #returns start time of eruption.
     def getStartDateTime(self):
-        #if (self.__is_time_adjusted==False):
-        #    raise ValueError('Time must be adjusted before using getStartDateTime')
         return self.profiles[0].start_datetime
 
     #returns end time of eruption.
     def getEndDateTime(self):
-        #if (self.__is_time_adjusted==False):
-        #    raise ValueError('Time must be adjusted before using getEndDateTime')
         return self.profiles[-1].start_datetime + timedelta(seconds=int(self.profiles[-1].duration_sec))
-        #return datetime(int(self.profiles[-1].year), int(self.profiles[-1].month), int(self.profiles[-1].day), int(self.profiles[-1].hour),int((self.profiles[-1].hour - int(self.profiles[-1].hour))*60.0)) + timedelta(seconds=int(self.profiles[-1].duration_sec))
     
     def get_profiles_Decimal_StartTimeAndDuration(self):
         start_times = []
@@ -93,13 +78,7 @@ class EmissionScenario():
     def get_profiles_StartDateTime(self):
         return [profile.start_datetime for profile in self.profiles]
     
-    #def getInterval(self):
-    #    return self.profiles[-1].duration_sec/3600
-
     def getScenarioEmittedMass(self):
-        #if (self.__is_divided_by_dh==False):
-        #    raise ValueError('Divide by dh before using getTotalEmittedMass')
-
         return np.sum([profile.getProfileEmittedMass() for profile in self.profiles])
 
     def __scaleProfiles(self, scale):
@@ -107,9 +86,6 @@ class EmissionScenario():
             profile.values = profile.values * scale
 
     def normalize_by_total_mass(self):
-        #if (self.__is_divided_by_dh == False):
-        #    raise ValueError('Divide by dh before using normalize_by_total_mass')
-        
         mass_before=self.getScenarioEmittedMass()
         scale = self.type_of_emission.mass_Mt/mass_before
         self.__scaleProfiles(scale)
@@ -123,7 +99,7 @@ class EmissionScenario():
         scale_factor=2000.0#*1000.0
         
         if (self.__is_divided_by_dh):
-            scale_factor = scale_factor * 1000.0    #just for conviniency
+            scale_factor = scale_factor * 1000.0    #for conviniency
         
         hours=[profile.hour for profile in self.profiles]
         fig = plt.figure(figsize=(18,7))
@@ -134,23 +110,21 @@ class EmissionScenario():
             
         plt.ylim(0.0, 40)
         #plt.xlim(0.0,0.03)
-        plt.ylabel('Altitude, $km$')#,fontsize=CB_LABEL_TEXT_SIZE)
-        plt.xlabel('Decimal hour')#,fontsize=CB_LABEL_TEXT_SIZE)
-        #plt.yticks(fontsize=TICKS_TEXT_SIZE)
-        #plt.xticks(fontsize=TICKS_TEXT_SIZE)
+        plt.ylabel('Altitude, $km$')
+        plt.xlabel('Decimal hour')
 
         plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
-        plt.xticks(hours)  # Set text labels.
+        plt.xticks(hours)
 
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
-                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass()}')
+                plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt')
             else:
-                plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/m/s]')
+                plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]')
         else:
-            plt.title(f'Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()} [Mt/s]')
+            plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]')
         
         plt.grid(True,alpha=0.3)
         plt.show()

@@ -186,11 +186,8 @@ class VerticalProfile_Umbrella(VerticalProfile):
         axes = plt.gca()
         axes.set_ylim([0,30])
         axes.set_xlim(0,0.5)
-        #axes.set_xscale('log')
-        #plt.title("Mass Fractions")
-        plt.xlabel('Mass fraction',fontsize=10)
-        plt.ylabel('Altitude ,km',fontsize=10)
+        plt.xlabel('Mass fraction')
+        plt.ylabel('Altitude, $km$')
         plt.legend(loc="best")
-        ###########################
         plt.grid(True)
         plt.show()

@@ -13,10 +13,10 @@ class WRFNetCDFWriter:
         self.orgn_wrf_input_file = "wrfinput_d01"
         
         self.__emissions = {
-                "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "total": []},
-                "so2": {"var": "E_VSO2", "mass_factor": 1e18, "time_factor": 60, "total": []},
-                "sulf": {"var": "E_VSULF", "mass_factor": 1e18, "time_factor": 60, "total": []},
-                "qv": {"var": "E_QV", "mass_factor": 1e9, "time_factor": 1, "total": []}}
+                "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "color": 'grey'},
+                "so2": {"var": "E_VSO2", "mass_factor": 1e18, "time_factor": 60, "color": 'blue'},
+                "sulf": {"var": "E_VSULF", "mass_factor": 1e18, "time_factor": 60, "color": 'red'},
+                "qv": {"var": "E_QV", "mass_factor": 1e9, "time_factor": 1, "color": 'lightblue'}}
         
         #Read data from wrfinput data
         print (f'Open {self.source_dir}{self.orgn_wrf_input_file}')
@@ -48,11 +48,23 @@ class WRFNetCDFWriter:
             os.system(f'rm {self.source_dir}{self.dst_file}')
 
         ds = xr.open_dataset(f'{self.source_dir}{self.orgn_wrf_input_file}')
-        ds_var = ds[['PH','PHB','T','Times']]
+        ds_var = ds[['T','Times']]
+        
+        #remove all attributes except the most important
+        for atr in ds.attrs:
+            if atr not in ["START_DATE", "SIMULATION_START_DATE", "WEST-EAST_GRID_DIMENSION", "SOUTH-NORTH_GRID_DIMENSION", \
+                       "BOTTOM-TOP_GRID_DIMENSION", "DX", "DY", "WEST-EAST_PATCH_START_UNSTAG", "WEST-EAST_PATCH_END_UNSTAG", \
+                        "WEST-EAST_PATCH_START_STAG", "WEST-EAST_PATCH_END_STAG", "SOUTH-NORTH_PATCH_START_UNSTAG", \
+                        "SOUTH-NORTH_PATCH_END_UNSTAG", "SOUTH-NORTH_PATCH_START_STAG", "SOUTH-NORTH_PATCH_END_STAG", \
+                        "BOTTOM-TOP_PATCH_START_UNSTAG", "BOTTOM-TOP_PATCH_END_UNSTAG", "BOTTOM-TOP_PATCH_START_STAG", \
+                        "BOTTOM-TOP_PATCH_END_STAG", "GRID_ID", "PARENT_ID", "I_PARENT_START", "J_PARENT_START", "CEN_LAT", \
+                        "CEN_LON", "TRUELAT1", "TRUELAT2", "MOAD_CEN_LAT", "STAND_LON", "POLE_LAT", "POLE_LON", "JULYR", \
+                        "JULDAY", "MAP_PROJ", "MAP_PROJ_CHAR"]:
+                del ds_var.attrs[atr]
         
         #make a mark in the history todo; add more information todo
         #store amount of material emitted
-        ds_var.attrs["HISTORY"] = ds_var.attrs.get("HISTORY", "") + f". Created by VolcanicEmissions on {datetime.datetime.utcnow().isoformat()} UTC"
+        ds_var.attrs["TITLE"] = f"OUTPUT FROM VolcanicEmissions on {datetime.datetime.utcnow()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
         
@@ -109,28 +121,27 @@ class WRFNetCDFWriter:
         print (f"Adding {var_name} {caption} {units} into {wrf_file}")
 
     def findClosestGridCell(self, lat, lon):
-        nrow=len(self.xlat)
-        ncol=len(self.xlon[0])
-        dist0=1000.0
-        ii=0
-        jj=0
+        nrow = len(self.xlat)
+        ncol = len(self.xlon[0])
+        dist0 = 1000.0
+        ii = 0
+        jj = 0
         for i in range(nrow):
             for j in range(ncol):
-                dist=np.sqrt((self.xlon[i,j]-lon)**2 +(self.xlat[i,j]-lat)**2)
-                if (dist<dist0):
-                    dist0=dist
-                    jj=j
-                    ii=i
-        return ii,jj
+                dist = np.sqrt((self.xlon[i, j] - lon) ** 2 + (self.xlat[i, j] - lat) ** 2)
+                if dist < dist0:
+                    dist0 = dist
+                    jj = j
+                    ii = i
+        if ii == 0 and jj == 0:
+            raise ValueError("The closest grid cell is at the boundary (0,0).")
+        return ii, jj
 
     def getColumn_H(self, x, y):
         return np.array(self.__h[:,y,x])
     
     def getColumn_dH(self, x, y):
         return np.array(self.__dh[:,y,x])
-    
-    #def getColumn_Area(self, x, y): #m2
-    #    return np.array(self.surface[y,x])
     
     def __write_column(self,var_name,factor,profiles,x,y):
         factor = factor/np.array(self.area[y,x])
@@ -196,7 +207,6 @@ class WRFNetCDFWriter:
             else:
                 self.__write_column(f"{mtrl['var']}", mtrl['time_factor'] * mtrl['mass_factor'], profiles, x, y)
 
-
     def plot_how_much_was_written(self):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r') as wrf_volc_file:
             times = [datetime.datetime.strptime(str(b''.join(t)), "b'%Y-%m-%d_%H:%M:%S'") for t in wrf_volc_file.variables['Times'][:]]
@@ -217,9 +227,11 @@ class WRFNetCDFWriter:
 
             times.append(times[-1] + datetime.timedelta(seconds=int(duration_sec[-1])))
             plt.title("Accumulated mass")
+            print("Material Total mass")
             for key, data in total.items():
-                plt.plot(times, [0]+list(np.cumsum(data)), label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
-
+                plt.plot(times, [0]+list(np.cumsum(data)),color=self.__emissions[key]['color'], label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
+                print(f"{key}\t{np.cumsum(data)[-1]:.2f} Mt")
+            print("--------------------------")
             plt.ylabel('Mass, $Mt$')
             plt.xlabel('Time, UTC')
             plt.legend(loc="best")
@@ -245,9 +257,4 @@ for m in range(0,ndust):  # loop over dust size bins
     for n in range(0,4):
         dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
 
-#Flip dustfrc_goc10bin_ln because the smallest bin is Bin10, largset is Bin1
-dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
-for m in range(0,ndust):
-    for n in range(0,nbin_o):
-        self.__netcdf_handler.write_column(f"E_VASH{n+1}",1e18 * (dustfrc_goc10bin_ln[m,n] * gocart_fractions[m]), scenario.profiles,x,y)                                        
 '''

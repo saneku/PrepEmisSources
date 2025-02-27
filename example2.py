@@ -18,8 +18,20 @@ if __name__ == "__main__":
                 ]
     #scenarios[0].plot(linestyle='--', color='grey', marker='')
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
-    
+
+    #scenarios[0].plot()
+    #scenarios[1].plot()
+
     emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
+
+    for p in scenarios[0].profiles:
+            p.plot()
+            print (f"Mass {sum(p.values):.2f}")
+
+
+    #scenarios[0].plot()
+    #scenarios[1].plot()
+
     
     netcdf_handler.plot_how_much_was_written()
