@@ -8,7 +8,7 @@ import numpy as np
 if __name__ == "__main__":
     
     scenarios = [
-                EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8),
+                EmissionScenario_InvertedPinatubo(Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,bin_n=10,mean_r=2.4,stddev=1.8),
                                                     './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
 
                 EmissionScenario_InvertedPinatubo(Emission_SO2(mass_mt=15.54,lat=15.1429,lon=120.3496),
@@ -19,15 +19,15 @@ if __name__ == "__main__":
     #scenarios[0].plot(linestyle='--', color='grey', marker='')
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
 
-    #scenarios[0].plot()
-    #scenarios[1].plot()
+    scenarios[0].plot()
+    scenarios[1].plot()
 
     emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
 
-    for p in scenarios[0].profiles:
-            p.plot()
-            print (f"Mass {sum(p.values):.2f}")
+    #for p in scenarios[0].profiles:
+    #        p.plot()
+    #        print (f"Mass {sum(p.values):.2f}")
 
 
     #scenarios[0].plot()

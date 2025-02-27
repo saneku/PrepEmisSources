@@ -73,12 +73,11 @@ class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
             #divide by dh to convert from Mt to Mt/m
             scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
             scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
-            
+
             #scenario.plot(linestyle='-', color='blue', marker='+')
             scenario.normalize_by_total_mass()
             
-            material_name = scenario.type_of_emission.get_name_of_material()
-            self._netcdf_handler.write_material(material_name,scenario.profiles,x,y)
+            self._netcdf_handler.write_material(scenario,x,y)
 
 
 class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
@@ -97,6 +96,5 @@ class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
 
             #scenario.plot(linestyle='-', color='blue', marker='+')
             scenario.normalize_by_total_mass()
-            
-            material_name = scenario.type_of_emission.get_name_of_material()
-            self._netcdf_handler.write_material(material_name,scenario.profiles,x,y)
+
+            self._netcdf_handler.write_material(scenario,x,y)

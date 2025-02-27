@@ -9,7 +9,7 @@ from profiles import *
 if __name__ == "__main__":
     
     ash_scenario = EmissionScenario_MixOfProfiles(\
-                 Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,mean=2.4,stddev=1.8))
+                 Emission_Ash(mass_mt=66.53,lat=15.1429,lon=120.3496,bin_n=10,mean_r=2.4,stddev=1.8))
     
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
     j,i = netcdf_handler.findClosestGridCell(lat=15.1429,lon=120.3496)

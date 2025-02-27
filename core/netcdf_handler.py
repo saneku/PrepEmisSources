@@ -62,8 +62,7 @@ class WRFNetCDFWriter:
                         "JULDAY", "MAP_PROJ", "MAP_PROJ_CHAR"]:
                 del ds_var.attrs[atr]
         
-        #make a mark in the history todo; add more information todo
-        #store amount of material emitted
+        #todo: add more information
         ds_var.attrs["TITLE"] = f"OUTPUT FROM VolcanicEmissions on {datetime.datetime.utcnow()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
@@ -173,39 +172,37 @@ class WRFNetCDFWriter:
                     continue
                 var = wrf_volc_file.variables[var_name]
                 if 'Time' in var.dimensions:
-                    print(var)
+                    #print(var)
                     for i,_ in enumerate(aux_times):
                         var[i,:]=var[0,:]
 
-    def write_material(self, material_name, profiles, x, y):                       
+    def write_material(self, scenario, x, y):                       
             #Rescaled from GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
+                                             #0.001 0.012 0.071 0.336 0.443
             #Ash1...6=0 Ash7=0.212 Ash8=0.506 Ash9=0.251 Ash10=0.0312
-            ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
+            #ash_mass_factors = np.array([0, 0, 0, 0, 0, 0, 0.212, 0.506, 0.251, 0.031])
             
             #computed from parameters of the lognormal distribution
             #mu = np.log(2*2.4)  # 2.4 median radii!!!
             #sigma = np.log(1.8)
+            #ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
             
-            #todo:look at sect 1 and sect 2
-
-            ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
-            
+            material_name = scenario.type_of_emission.get_name_of_material()
             if material_name not in self.__emissions:
                 raise ValueError(f"Unknown material: {material_name}")
 
             mtrl = self.__emissions[material_name]
             
-            #so2,sulf are in "ug/m2/min"
-            #water vaport in "kg/m2/s"
-            #ash in "ug/m2/s"
+            #so2,sulf emissions in "ug/m2/min"
+            #water vapor emissions in "kg/m2/s"
+            #ash emissions in "ug/m2/s"
             
             if material_name == "ash":
-                if not np.isclose(sum(ash_mass_factors), 1.0):
-                    raise ValueError(f"sum(ash_mass_factors)={sum(ash_mass_factors)} Should be =1.0")
+                ash_mass_factors = scenario.type_of_emission.ash_mass_factors[::-1]
                 for i in range(1, 11):
-                    self.__write_column(f"{mtrl['var']}{i}",mtrl['time_factor'] * mtrl['mass_factor'] * ash_mass_factors[i-1], profiles, x, y)
+                    self.__write_column(f"{mtrl['var']}{i}",mtrl['time_factor'] * mtrl['mass_factor'] * ash_mass_factors[i-1], scenario.profiles, x, y)
             else:
-                self.__write_column(f"{mtrl['var']}", mtrl['time_factor'] * mtrl['mass_factor'], profiles, x, y)
+                self.__write_column(f"{mtrl['var']}", mtrl['time_factor'] * mtrl['mass_factor'], scenario.profiles, x, y)
 
     def plot_how_much_was_written(self):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r') as wrf_volc_file:
