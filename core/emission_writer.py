@@ -59,6 +59,7 @@ class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
             scenario.interpolate_time(self._output_interval) # minutes time intervals to interpolate to
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
+            #todo: optimize this
             if not self._only_once:
                 self._netcdf_handler.prepare_file(scenario.getStartDateTime())#.replace(minute=0, second=0, microsecond=0))
 
@@ -87,6 +88,7 @@ class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
         for scenario in self._getScenarios():
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
+            #todo: optimize this
             if not self._only_once:
                 self._netcdf_handler.prepare_file(scenario.getStartDateTime())
                 self._netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
