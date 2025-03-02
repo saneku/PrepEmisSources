@@ -36,33 +36,29 @@ class Emission_Ash(Emission):
         
         super().__init__(mass_mt,lat,lon)
         
-    def __volume_integrand(self,x):
-        mu = np.log(2*self.radii)
+    def __volume_integrand(self,r):
+        mu = np.log(self.radii)
         sigma = np.log(self.stddev)
-        return (4.0*np.pi*(x**3)/3.0)*(np.exp(-(np.log(x) - mu)**2 / (2 * sigma**2))/(x * sigma * np.sqrt(2 * np.pi)))
+        return (r**2)*(np.exp(-(np.log(r) - mu)**2 / (2 * sigma**2))/(sigma * np.sqrt(2 * np.pi)))
 
     def __compute_ash_mass_fractions(self):
-        range_min=1e-10 #microns
-        range_max=1e5
-        total_volume, err = quad(self.__volume_integrand, range_min, range_max)
 
         #10 ash size bins
-        dlo_sect=[1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000]
-        dhi_sect=[3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000]
-        
+        #Ash10,Ash9,Ash8,...,Ash1
+        rlo_sect = np.array([1.955e-02, 1.953125, 3.90625, 7.8125,15.625,31.25,62.5,125.,250.,500.])
+        rhi_sect = np.array([1.953125, 3.90625, 7.8125,15.625,31.25,62.5,125.,250.,500.,1000.])
+
         if self.nbin == 4:
-            dlo_sect=dlo_sect[0:4]
-            dhi_sect=dhi_sect[0:4]
+            rlo_sect=rlo_sect[0:4]
+            rhi_sect=rhi_sect[0:4]
+        
+        total_volume, _ = quad(self.__volume_integrand, rlo_sect[0], rhi_sect[-1])
         
         #initialize 10 ash size bins. 
         xmas_sect = np.zeros(10)
         for n in range(0,self.nbin):
-            xmas_sect[n], err = quad(self.__volume_integrand, dlo_sect[n], dhi_sect[n])
+            xmas_sect[n], _ = quad(self.__volume_integrand, rlo_sect[n], rhi_sect[n])
             xmas_sect[n] = xmas_sect[n]/total_volume
-
-        #normalise to 1.0
-        if self.nbin == 4:
-            xmas_sect = xmas_sect/np.sum(xmas_sect[0:4])
 
         if not np.isclose(sum(xmas_sect), 1.0):
             raise ValueError(f"sum(xmas_sect)={np.sum(xmas_sect):0.2f} Should be =1.0")

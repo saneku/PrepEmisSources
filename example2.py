@@ -23,7 +23,7 @@ if __name__ == "__main__":
     scenarios[0].plot()
     scenarios[1].plot()
 
-    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 120)
+    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 60)
     emission_writer.write()
 
     #for p in scenarios[0].profiles:
