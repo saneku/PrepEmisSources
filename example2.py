@@ -39,5 +39,4 @@ if __name__ == "__main__":
 
 
 #todo: add info on eruption time, duration, etc. to the netcdf file
-#todo: add second constructor for ash fractions.
 #todo: add suzuki profile

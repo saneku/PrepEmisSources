@@ -15,8 +15,8 @@ class WRFNetCDFWriter:
         self.__emissions = {
                 "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "color": 'grey'},
                 "so2": {"var": "E_VSO2", "mass_factor": 1e18, "time_factor": 60, "color": 'blue'},
-                "sulf": {"var": "E_VSULF", "mass_factor": 1e18, "time_factor": 60, "color": 'red'},
-                "qv": {"var": "E_QV", "mass_factor": 1e9, "time_factor": 1, "color": 'lightblue'}}
+                "sulfate": {"var": "E_VSULF", "mass_factor": 1e18, "time_factor": 60, "color": 'red'},
+                "watervapor": {"var": "E_QV", "mass_factor": 1e9, "time_factor": 1, "color": 'lightblue'}}
         
         #Read data from wrfinput data
         print (f'Open {self.source_dir}{self.orgn_wrf_input_file}')

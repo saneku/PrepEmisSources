@@ -22,7 +22,7 @@ class Emission(ABC):
         pass
 
 class Emission_Ash(Emission):
-    def __init__(self, mass_mt,lat,lon,bin_n,mean_r,stddev):
+    def __init__(self, mass_mt, lat, lon, bin_n=10, mean_r=2.4, stddev=1.8):
         self.radii = mean_r
         self.stddev = stddev
         
@@ -60,7 +60,7 @@ class Emission_Ash(Emission):
             xmas_sect[n], _ = quad(self.__volume_integrand, rlo_sect[n], rhi_sect[n])
             xmas_sect[n] = xmas_sect[n]/total_volume
 
-        if not np.isclose(sum(xmas_sect), 1.0):
+        if not np.isclose(np.sum(xmas_sect), 1.0):
             raise ValueError(f"sum(xmas_sect)={np.sum(xmas_sect):0.2f} Should be =1.0")
 
         return xmas_sect
@@ -70,6 +70,19 @@ class Emission_Ash(Emission):
     
     def get_name_of_material(self):
         return 'ash'
+    
+    def setMassFractions(self, ash_mass_factors):
+        ash_mass_factors = np.asarray(ash_mass_factors)
+        self.nbin=ash_mass_factors.shape[0]
+        if self.nbin not in [4,10]:
+            ValueError("Number of ash bins must be 4 or 10")
+        
+        if not np.isclose(np.sum(ash_mass_factors), 1.0):
+            raise ValueError(f"sum(xmas_sect)={np.sum(ash_mass_factors):0.2f} Should be =1.0")
+
+        self.ash_mass_factors = ash_mass_factors
+        print ("Ash mass redistribution (Ash1, Ash2, Ash3,...): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
+
 
 class Emission_SO2(Emission):
     def __str__(self):
