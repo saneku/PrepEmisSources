@@ -23,7 +23,7 @@ if __name__ == "__main__":
     scenarios[0].plot()
     scenarios[1].plot()
 
-    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 60)
+    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
 
     #for p in scenarios[0].profiles:
@@ -36,3 +36,8 @@ if __name__ == "__main__":
 
     
     netcdf_handler.plot_how_much_was_written()
+
+
+#todo: add info on eruption time, duration, etc. to the netcdf file
+#todo: add second constructor for ash fractions.
+#todo: add suzuki profile

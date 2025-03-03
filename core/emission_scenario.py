@@ -117,18 +117,21 @@ class EmissionScenario():
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
         plt.xticks(hours)
-
-        if (self.__is_divided_by_dh):
-            if (self.__is_normalized_by_total_mass):
-                plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt')
-            else:
-                plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]')
-        else:
-            plt.title(f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]')
+       
+        plt.title(self.__getString())
         
         plt.grid(True,alpha=0.3)
         plt.show()
         
+    def __getString(self):        
+        if (self.__is_divided_by_dh):
+            if (self.__is_normalized_by_total_mass):
+                return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
+            else:
+                return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]'
+        else:
+            return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]'
+
     def interpolate_time(self, interval_minutes=60):
         dt = self.getStartDateTime()
         # Round minutes to nearest 10th

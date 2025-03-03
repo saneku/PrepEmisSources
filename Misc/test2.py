@@ -29,8 +29,8 @@ for n in range(0,nbin_o):
     print (n+1,"{:10.4f}".format(dlo_sectm[n]),"{:10.4f}".format(dhi_sectm[n]))
 
 #Ash Size bins (um) Diametr, from higher to lower
-ra_ash=array([1000.     ,  500.     ,  250.     ,  125.     ,  62.5    ,31.25   ,   15.625  ,    7.8125 ,    3.90625,    0.0391     ])
-rb_ash=array([2000.     , 1000.     ,  500.     ,  250.     ,  125.     ,62.5    ,   31.25   ,   15.625  ,    7.8125 ,    3.90625])
+da_ash=array([1000.     ,  500.     ,  250.     ,  125.     ,  62.5    ,31.25   ,   15.625  ,    7.8125 ,    3.90625,    0.0391     ])
+db_ash=array([2000.     , 1000.     ,  500.     ,  250.     ,  125.     ,62.5    ,   31.25   ,   15.625  ,    7.8125 ,    3.90625])
 
 '''
 3138   │ !1       1000    2000    -1 6.5  0   6.5     13  22  24  22  2.92    2.92    0  !
@@ -46,8 +46,8 @@ rb_ash=array([2000.     , 1000.     ,  500.     ,  250.     ,  125.     ,62.5   
 '''
 
 for m in range(0,nash):  # loop over ash size bins
-    dlogoc = ra_ash[m]  # low diameter limit
-    dhigoc = rb_ash[m]  # hi diameter limit
+    dlogoc = da_ash[m]  # low diameter limit
+    dhigoc = db_ash[m]  # hi diameter limit
 
     for n in range(0,nbin_o):
         dustfrc_ash10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))

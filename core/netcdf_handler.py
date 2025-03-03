@@ -52,7 +52,7 @@ class WRFNetCDFWriter:
         
         #remove all attributes except the most important
         for atr in ds.attrs:
-            if atr not in ["START_DATE", "SIMULATION_START_DATE", "WEST-EAST_GRID_DIMENSION", "SOUTH-NORTH_GRID_DIMENSION", \
+            if atr not in ["TITLE","START_DATE", "SIMULATION_START_DATE", "WEST-EAST_GRID_DIMENSION", "SOUTH-NORTH_GRID_DIMENSION", \
                        "BOTTOM-TOP_GRID_DIMENSION", "DX", "DY", "WEST-EAST_PATCH_START_UNSTAG", "WEST-EAST_PATCH_END_UNSTAG", \
                         "WEST-EAST_PATCH_START_STAG", "WEST-EAST_PATCH_END_STAG", "SOUTH-NORTH_PATCH_START_UNSTAG", \
                         "SOUTH-NORTH_PATCH_END_UNSTAG", "SOUTH-NORTH_PATCH_START_STAG", "SOUTH-NORTH_PATCH_END_STAG", \
@@ -63,7 +63,7 @@ class WRFNetCDFWriter:
                 del ds_var.attrs[atr]
         
         #todo: add more information
-        ds_var.attrs["TITLE"] = f"OUTPUT FROM VolcanicEmissions on {datetime.datetime.utcnow()} UTC"
+        ds_var.attrs["HISTORY"] = f"OUTPUT FROM PrepEmisSources. {datetime.datetime.utcnow()} UTC"
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
         
