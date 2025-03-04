@@ -60,7 +60,7 @@ if __name__ == "__main__":
     #Water vapor Emissions
     watervapor_scenario = EmissionScenario_MixOfProfiles(Emission_WaterVapor(mass_mt=25.0,lat=LAT, lon=LON))
     watervapor_profiles = [
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.95]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),        
@@ -82,3 +82,7 @@ if __name__ == "__main__":
     watervapor_scenario.plot()    
 
     netcdf_handler.plot_how_much_was_written()
+    
+    
+    #todo: fix bug if all zero profiles are used in the beginning, then profiles (QV for example) are not written to the netcdf file
+    #But plot_how_much_was_written shows that they were written!!!
