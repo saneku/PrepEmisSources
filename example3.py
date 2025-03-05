@@ -8,7 +8,7 @@ import numpy as np
 if __name__ == "__main__":
     LAT, LON = 15.1429, 120.3496
     YEAR, MONTH, DAY = 1991, 6, 15
-    DURATION = 36000    #seconds
+    DURATION = 7200    #seconds
 
     #Ash
     e=Emission_Ash(mass_mt=65.0, lat=LAT, lon=LON)
@@ -20,8 +20,8 @@ if __name__ == "__main__":
     staggerred_h = netcdf_handler.getColumn_H(i, j)
 
     ash_profiles = [
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.75]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.95]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
     ]
     for p, args in ash_profiles:
         ash_scenario.add_profile(p(*args))
@@ -29,8 +29,8 @@ if __name__ == "__main__":
     #SO2 Emissions
     so2_scenario = EmissionScenario_MixOfProfiles(Emission_SO2(mass_mt=15.0,lat=LAT, lon=LON))
     so2_profiles = [
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.95]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.95]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
     ]
     
     for p, args in so2_profiles:
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     sulfate_scenario = EmissionScenario_MixOfProfiles(Emission_Sulfate(mass_mt=5.0,lat=LAT, lon=LON))
     sulfate_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.95]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
     ]
     for p, args in sulfate_profiles:
         sulfate_scenario.add_profile(p(*args))
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     watervapor_scenario = EmissionScenario_MixOfProfiles(Emission_WaterVapor(mass_mt=50.0,lat=LAT, lon=LON))
     watervapor_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 25000, 1000, 0.95]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
     ]
     for p, args in watervapor_profiles:
         watervapor_scenario.add_profile(p(*args))
