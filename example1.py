@@ -58,13 +58,13 @@ if __name__ == "__main__":
         sulfate_scenario.add_profile(p(*args))
 
     #Water vapor Emissions
-    watervapor_scenario = EmissionScenario_MixOfProfiles(Emission_WaterVapor(mass_mt=25.0,lat=LAT, lon=LON))
+    watervapor_scenario = EmissionScenario_MixOfProfiles(Emission_WaterVapor(mass_mt=50.0,lat=LAT, lon=LON))
     watervapor_profiles = [
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.95]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 25000, 1000, 0.95]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),        
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 10000, 1000, 0.95]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
+        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
     ]
     for p, args in watervapor_profiles:
