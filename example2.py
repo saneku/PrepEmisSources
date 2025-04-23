@@ -1,5 +1,5 @@
 from emissions import *
-from core import *
+from src import *
 import numpy as np
 
 #example 2
