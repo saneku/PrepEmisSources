@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 class VerticalProfile():
-    def __init__(self, staggerred_h,profile,year,month,day,hour,duration_sec):
+    def __init__(self, staggerred_h,values,year,month,day,hour,duration_sec,scale=1):
         self.h = staggerred_h
-        self.values = profile
+        self.values = values * scale
         self.year = year
         self.month = month
         self.day = day
@@ -34,23 +34,22 @@ class VerticalProfile():
     
     def setDatetime(self,d):
         self.start_datetime=d.to_pydatetime()
-    #    return 
     
     def getProfileStartTimeAndDuration(self):
         return self.erup_beg,self.duration_sec/60.0
     
     def plot(self,*args, **kwargs):
-            plt.plot(self.values,self.h/1000.0,'-+', label=f"{str(self)}", *args, **kwargs)
-        
-            axes = plt.gca()
-            axes.set_ylim([0,30])
-            axes.set_xlim(0,0.5)
-            #plt.title("Mass Fractions")
-            plt.xlabel('Mass fraction',fontsize=10)
-            plt.ylabel('Altitude ,km',fontsize=10)
-            plt.legend(loc="best")
-            plt.grid(True)
-            plt.show()
+        plt.plot(self.values,self.h/1000.0,'-+', label=f"{str(self)}", *args, **kwargs)
+    
+        axes = plt.gca()
+        axes.set_ylim([0,30])
+        axes.set_xlim(0,0.5)
+        #plt.title("Mass Fractions")
+        plt.xlabel('Mass fraction',fontsize=10)
+        plt.ylabel('Altitude ,km',fontsize=10)
+        plt.legend(loc="best")
+        plt.grid(True)
+        plt.show()
         
     def normalize_by_one(self,arr):
         return arr / np.sum(arr)
@@ -66,8 +65,8 @@ class VerticalProfile_Zero(VerticalProfile):
         super().__init__(z_at_w,profile,year,month,day,hour,duration_sec)
 
 class VerticalProfile_Uniform(VerticalProfile):
-    def __init__(self, z_at_w, year, month, day, hour, duration_sec, value=1.0,h_min=5000.0,h_max=10000.0):
-        profile = value * np.ones(len(z_at_w))
+    def __init__(self, z_at_w, year, month, day, hour, duration_sec, h_min=5000.0, h_max=10000.0, scale=1):
+        profile = np.ones(len(z_at_w))
 
         if(h_max<h_min):
             raise ValueError('h_max<h_min in Uniform profile')
@@ -88,9 +87,9 @@ class VerticalProfile_Uniform(VerticalProfile):
         profile[0:k_initial]=0.0
         profile[k_final:kte]=0.0
 
-        profile = self.normalize_by_one(profile)
+        #profile = self.normalize_by_one(profile)
     
-        super().__init__(z_at_w,profile,year,month,day,hour,duration_sec)
+        super().__init__(z_at_w,profile,year,month,day,hour,duration_sec,scale)
 
 class VerticalProfile_Suzuki(VerticalProfile):
     pass
@@ -124,7 +123,7 @@ class VerticalProfile_Suzuki(VerticalProfile):
 	'''
 
 class VerticalProfile_Umbrella(VerticalProfile):
-    def __init__(self, z_at_w, year, month, day, hour, duration_sec, emiss_height=10000, vent_h=500, percen_mass_umbrela=0.75):
+    def __init__(self, z_at_w, year, month, day, hour, duration_sec, emiss_height=10000, vent_h=500, percen_mass_umbrela=0.75, scale=1):
         self.percen_mass_umbrela = percen_mass_umbrela
         self.base_umbrela = 1. - percen_mass_umbrela
         self.emiss_height = emiss_height
@@ -176,7 +175,7 @@ class VerticalProfile_Umbrella(VerticalProfile):
 
         #print(sum(profile)) #normalisation check
                 
-        super().__init__(z_at_w,profile,year,month,day,hour,duration_sec)
+        super().__init__(z_at_w,profile,year,month,day,hour,duration_sec,scale)
 
     def plot(self,*args, **kwargs):
         plt.plot(self.values,self.h/1000.0,'-+', \

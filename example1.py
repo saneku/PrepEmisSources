@@ -9,6 +9,9 @@ import numpy as np
 # and how to write them to a netCDF file. Plotting the emissions using the plot method of the 
 # EmissionScenario class. Classes VerticalProfile_Umbrella, VerticalProfile_Zero, 
 # and VerticalProfile_Uniform classes to create the profiles for the emissions.
+# Pay attention to the fact that the last profile for each scenario is a
+# 'VerticalProfile_Zero' profile. This is done to avoid emissions
+# after the eruption has ended.
 
 if __name__ == "__main__":
     # Prescribe the location of the volcano, start date, and profile's duration in seconds
@@ -26,11 +29,11 @@ if __name__ == "__main__":
     #define ash mass fractions. 0.1 for all bins in this case
     ash_e.setMassFractions(np.full(10, 0.1))
     ash_profiles = [
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.55]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.55,1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 1000, 0.95]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 1000, 0.55,2]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
-        (VerticalProfile_Uniform, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 1.0, 5000.0, 10000.0]),
+        (VerticalProfile_Uniform, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 5000.0, 10000.0, 0.1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
     ]
     #Define the ash scenario
@@ -71,10 +74,10 @@ if __name__ == "__main__":
 
     #Water vapor Emissions
     watervapor_profiles = [
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 25000, 1000, 0.95]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 25000, 1000, 0.95,2]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
+        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION, 25000, 1000, 0.95,1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
     ]
