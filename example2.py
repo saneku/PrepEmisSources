@@ -1,4 +1,3 @@
-from emissions import *
 from src import *
 import numpy as np
 
@@ -40,7 +39,3 @@ if __name__ == "__main__":
     scenarios[2].plot()
     
     netcdf_handler.plot_how_much_was_written()
-
-
-#todo: add info on eruption time, duration, etc. to the netcdf file
-#todo: add suzuki profile

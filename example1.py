@@ -1,6 +1,4 @@
 from src import *
-from emissions import *
-from profiles import *
 import numpy as np
 
 # Example 1: Different type profiles with the same DURATION = 7200 seconds
@@ -82,7 +80,3 @@ if __name__ == "__main__":
     watervapor_scenario.plot()    
 
     netcdf_handler.plot_how_much_was_written()
-    
-    
-    #todo: fix bug if all zero profiles are used in the beginning, then profiles (QV for example) are not written to the netcdf file
-    #But plot_how_much_was_written shows that they were written!!!

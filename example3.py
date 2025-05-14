@@ -1,9 +1,7 @@
 from src import *
-from emissions import *
-from profiles import *
 import numpy as np
 
-# Example 1: Different type profiles with the same DURATION = 7200 seconds
+# Example 3: Different type profiles with the same DURATION = 7200 seconds
 
 if __name__ == "__main__":
     LAT, LON = 15.1429, 120.3496
@@ -66,10 +64,3 @@ if __name__ == "__main__":
     watervapor_scenario.plot()    
 
     netcdf_handler.plot_how_much_was_written()
-    
-    
-    #todo: add factors for profiles, so that they can be scaled up or down
-    
-    #plot correctly profiles
-    
-    #io_form_auxinput13                  = 2,  add
