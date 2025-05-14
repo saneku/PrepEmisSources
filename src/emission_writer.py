@@ -23,6 +23,10 @@ class EmissionWriter():
     def _getScenarios(self):
         return self.__scenarios
 
+    def plot_scenarios(self):
+        for scenario in self._getScenarios():
+            scenario.plot()#linestyle='-', color='blue')
+
     @staticmethod
     def _postAmbula(func):
         """Decorator that runs after the method execution."""

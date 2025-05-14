@@ -18,14 +18,16 @@ if __name__ == "__main__":
     j, i = netcdf_handler.findClosestGridCell(lat=LAT, lon=LON)
     staggerred_h = netcdf_handler.getColumn_H(i, j)
 
-    #Ash Emissions
-    ash_e=Emission_Ash(mass_mt=65.0, lat=LAT, lon=LON)
-    ash_e.setMassFractions(np.full(10, 0.1))
+    #Ash Emissions    
     ash_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.95]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
     ]
+    
     #Define the ash scenario
+    ash_e=Emission_Ash(mass_mt=65.0, lat=LAT, lon=LON)
+    #define ash mass fractions. 0.1 for all bins in this case
+    ash_e.setMassFractions(np.full(10, 0.1))
     ash_scenario = EmissionScenario_MixOfProfiles(ash_e)
     #Add the ash profiles to the ash scenario
     for p, args in ash_profiles:
@@ -70,10 +72,12 @@ if __name__ == "__main__":
     emission_writer.write()
 
     #Plotting the scenarios
-    ash_scenario.plot()
-    so2_scenario.plot()
-    sulfate_scenario.plot()
-    watervapor_scenario.plot()
+    emission_writer.plot_scenarios()
+    #OR plot separately
+    #ash_scenario.plot(linestyle='-', color='brown')
+    #so2_scenario.plot(linestyle='-', color='blue')
+    #sulfate_scenario.plot(linestyle='-', color='red')
+    #watervapor_scenario.plot(linestyle='-', color='blue',marker="+")
 
     #Plotting the amount of mass written to the netCDF file
     #for debugging purposes

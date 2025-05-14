@@ -47,9 +47,6 @@ class EmissionScenario():
     #    for p in self.profiles:
     #        yield p
 
-    def __str__(self):
-        return self.__class__.__name__
-
     def __repr__(self):
         return f"EmissionScenario(profiles={self.__list_profiles()})"
     
@@ -117,19 +114,21 @@ class EmissionScenario():
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
         plt.xticks(hours)
        
-        plt.title(self.__getString())
+        plt.title(self)
         
         plt.grid(True,alpha=0.3)
         plt.show()
+  
+    def __str__(self):
+        s = self.__class__.__name__+" "
         
-    def __getString(self):        
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
-                return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
+                return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
             else:
-                return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]'
+                return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]'
         else:
-            return f'{self}. {self.getNumberOfProfiles()} profiles. \n{self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]'
+            return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]'
 
     def interpolate_time(self, interval_minutes=60):
         dt = self.getStartDateTime()

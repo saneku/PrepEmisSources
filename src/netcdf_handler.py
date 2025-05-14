@@ -235,22 +235,3 @@ class WRFNetCDFWriter:
             plt.ylim([0, 80])
             plt.gca().get_xaxis().set_major_formatter(DateFormatter('%H:%M'))
             plt.show()
-
-
-'''
-ndust=5
-nbin_o=10
-dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
-dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
-dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
-gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
-ra_gocart=np.array([0.1,1.0,1.8,3.0,6.0])
-rb_gocart=np.array([1.0,1.8,3.0,6.0,10.0])
-for m in range(0,ndust):  # loop over dust size bins
-    dlogoc = ra_gocart[m]*2.0  # low diameter limit
-    dhigoc = rb_gocart[m]*2.0  # hi diameter limit
-
-    for n in range(0,4):
-        dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
-
-'''
