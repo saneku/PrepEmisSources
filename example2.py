@@ -1,11 +1,13 @@
 from src import *
 import numpy as np
 
-#example 2
-#emisson profiles of ash and SO2 from Ukhov et al. (2023).
-#water vapor emission is set to 100 Mt, following the SO2 emission scenario
+# Example 2:
+# Emisson profiles of ash and SO2 are obtained by inversion (Ukhov et al. 2023). 
+# Water vapor emission is set to 100 Mt, with the same profile as SO2.
+# Inverted profiles are interpolated to 10 minute intervals.
 
 if __name__ == "__main__":
+    # Prescribe the location of the volcano
     LAT, LON = 15.1429, 120.3496
     
     scenarios = [
@@ -19,13 +21,18 @@ if __name__ == "__main__":
                                                      './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 ]
-    #scenarios[0].plot(linestyle='--', color='grey', marker='')
+    
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
 
+    # Plot the scenarios
     scenarios[0].plot()
     scenarios[1].plot()
     scenarios[2].plot()
+    #scenarios[0].plot(linestyle='--', color='grey', marker='')
 
+    # Profiles are interpolated into the required vertical grid
+    # and divided by the height of the grid cell to convert from Mt to Mt/m
+    # The profiles are normalized by the total mass.
     emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
 
@@ -33,9 +40,10 @@ if __name__ == "__main__":
     #        p.plot()
     #        print (f"Mass {sum(p.values):.2f}")
 
-
     scenarios[0].plot()
     scenarios[1].plot()
     scenarios[2].plot()
     
+    #Plotting the amount of mass written to the netCDF file
+    #for debugging purposes
     netcdf_handler.plot_how_much_was_written()

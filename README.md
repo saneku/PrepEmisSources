@@ -1,7 +1,4 @@
-# PrepEmisSources
-
-Dependancies:
-conda install scipy,netCDF4,xarray,matplotlib
+## PrepEmisSources
 
 This preprocessor was developed to facilitate the preparation of volcanic emissions used in WRF-Chem starting from v.4.7.X
 If you find this preprocessor useful, please do not forget to cite it.
@@ -9,6 +6,11 @@ If you find this preprocessor useful, please do not forget to cite it.
 It is planned to extend to other emissions as well.
 
 Ukhov et. al, Enhancing volcanic emissions...
+
+
+# Dependancies:
+conda install scipy,netCDF4,xarray,matplotlib,pandas
+
 
 
 
@@ -21,4 +23,3 @@ Ukhov et. al, Enhancing volcanic emissions...
 - add factors for profiles, so that they can be scaled up or down (ex3.py)
 - remove extra stuff from netcdf_handler
 - plot correctly profiles (ex3)
-- io_form_auxinput13                  = 2,  add

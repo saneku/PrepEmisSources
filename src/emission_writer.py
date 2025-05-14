@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import wraps
 from src import *
-from .emissions import *
 
 import numpy as np
 

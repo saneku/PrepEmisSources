@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 
 class WRFNetCDFWriter:
-    def __init__(self, source_dir='./'):
+    def __init__(self, source_dir='./', wrf_input_file='./wrfinput_d01'):
         self.source_dir = source_dir
-        self.orgn_wrf_input_file = "wrfinput_d01"
+        self.orgn_wrf_input_file = wrf_input_file
         
         self.__emissions = {
                 "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "color": 'grey'},
@@ -41,7 +41,6 @@ class WRFNetCDFWriter:
         return f"WRFNetCDFWriter(source_file='{self.source_dir}{self.orgn_wrf_input_file}', destination_file='{self.source_dir}{self.dst_file}', dimensions={self.__h.shape})"
 
     def prepare_file(self,suffix):
-        #===========================================
         self.dst_file = f'wrfchemv_d01.{suffix.strftime("%Y-%m-%d_%H:%M:%S")}'
         #copy wrfinput to wrfchemv
         if os.path.exists(f'{self.source_dir}{self.dst_file}'):
