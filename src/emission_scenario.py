@@ -120,15 +120,16 @@ class EmissionScenario():
         plt.show()
   
     def __str__(self):
-        s = self.__class__.__name__+" "
+        s = self.__class__.__name__+" "+f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \
+        \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. '
         
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
-                return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
+                return s +  f'Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
             else:
-                return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/m/s]'
+                return s + 'Units [Mt/m/s]'
         else:
-            return s + f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}.\nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. Units [Mt/s]'
+            return s + 'Units [Mt/s]'
 
     def interpolate_time(self, interval_minutes=60):
         dt = self.getStartDateTime()

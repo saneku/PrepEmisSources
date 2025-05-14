@@ -32,6 +32,5 @@ Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
 - correct name for 3rd example
 - fix bug if all zero profiles are used at the beginning, then profiles (QV for example) 
     are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
-- add info on eruption time, duration, etc. to the netcdf file (ex2.py) see netcdf_handler.py
 - add suzuki profile (ex2.py)
 - plot correctly profiles (ex3)

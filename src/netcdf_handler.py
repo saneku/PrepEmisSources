@@ -61,8 +61,7 @@ class WRFNetCDFWriter:
                         "JULDAY", "MAP_PROJ", "MAP_PROJ_CHAR"]:
                 del ds_var.attrs[atr]
         
-        #todo: add more information
-        ds_var.attrs["HISTORY"] = f"OUTPUT FROM PrepEmisSources. {datetime.datetime.utcnow()} UTC"
+        ds_var.attrs["HISTORY"] = f"OUTPUT FROM PrepEmisSources on {datetime.datetime.utcnow()} UTC. "
         ds_var.to_netcdf(f'{self.source_dir}{self.dst_file}')
         #===========================================
         
@@ -78,6 +77,14 @@ class WRFNetCDFWriter:
 
             for i in range(1,11):
                 self.__add4dVar(nc_file,"E_VASH"+str(i),"Volcanic Emissions, bin"+str(i),"ug/m2/s")
+
+    def update_file_history(self, history_string):
+        with nc.Dataset(f'{self.source_dir}{self.dst_file}', 'r+') as nc_file:
+            if "HISTORY" in nc_file.ncattrs():
+                nc_file.setncattr("HISTORY", nc_file.getncattr("HISTORY") + history_string)
+            else:
+                nc_file.setncattr("HISTORY", history_string)
+
 
     def __add4dVar(self,wrf_file,var_name,caption,units):
         wrf_file.createVariable(var_name, 'f4', ('Time','bottom_top','south_north', 'west_east'))
@@ -203,7 +210,7 @@ class WRFNetCDFWriter:
             else:
                 self.__write_column(f"{mtrl['var']}", mtrl['time_factor'] * mtrl['mass_factor'], scenario.profiles, x, y)
 
-    def plot_how_much_was_written(self):
+    def check_how_much_has_been_written(self):
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r') as wrf_volc_file:
             times = [datetime.datetime.strptime(str(b''.join(t)), "b'%Y-%m-%d_%H:%M:%S'") for t in wrf_volc_file.variables['Times'][:]]
             duration_sec = list(np.diff(times).astype('timedelta64[s]').astype(int))
@@ -222,16 +229,17 @@ class WRFNetCDFWriter:
                     total[key].append(total_emission * duration_sec[time_idx] / data["time_factor"] / data["mass_factor"])
 
             times.append(times[-1] + datetime.timedelta(seconds=int(duration_sec[-1])))
-            plt.title("Accumulated mass")
-            print("Material Total mass")
-            for key, data in total.items():
-                plt.plot(times, [0]+list(np.cumsum(data)),color=self.__emissions[key]['color'], label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
-                print(f"{key}\t{np.cumsum(data)[-1]:.2f} Mt")
-            print("--------------------------")
-            plt.ylabel('Mass, $Mt$')
-            plt.xlabel('Time, UTC')
-            plt.legend(loc="best")
-            plt.grid(True, alpha=0.3)
-            plt.ylim([0, 80])
-            plt.gca().get_xaxis().set_major_formatter(DateFormatter('%H:%M'))
-            plt.show()
+        
+        plt.title("Accumulated mass")
+        print("Material Total mass")
+        for key, data in total.items():
+            plt.plot(times, [0]+list(np.cumsum(data)),color=self.__emissions[key]['color'], label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
+            print(f"{key}\t{np.cumsum(data)[-1]:.2f} Mt")
+        print("--------------------------")
+        plt.ylabel('Mass, $Mt$')
+        plt.xlabel('Time, UTC')
+        plt.legend(loc="best")
+        plt.grid(True, alpha=0.3)
+        plt.ylim([0, 80])
+        plt.gca().get_xaxis().set_major_formatter(DateFormatter('%H:%M'))
+        plt.show()

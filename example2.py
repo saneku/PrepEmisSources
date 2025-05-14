@@ -43,7 +43,3 @@ if __name__ == "__main__":
     scenarios[0].plot()
     scenarios[1].plot()
     scenarios[2].plot()
-    
-    #Plotting the amount of mass written to the netCDF file
-    #for debugging purposes
-    netcdf_handler.plot_how_much_was_written()

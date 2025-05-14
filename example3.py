@@ -16,6 +16,7 @@ if __name__ == "__main__":
     # find the location of the volcano using the information from the wrfinput file
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
     j, i = netcdf_handler.findClosestGridCell(lat=LAT, lon=LON)
+    #get the height of the 'mass' points in the wrfinput file
     staggerred_h = netcdf_handler.getColumn_H(i, j)
 
     #Ash Emissions    
@@ -78,7 +79,3 @@ if __name__ == "__main__":
     #so2_scenario.plot(linestyle='-', color='blue')
     #sulfate_scenario.plot(linestyle='-', color='red')
     #watervapor_scenario.plot(linestyle='-', color='blue',marker="+")
-
-    #Plotting the amount of mass written to the netCDF file
-    #for debugging purposes
-    netcdf_handler.plot_how_much_was_written()

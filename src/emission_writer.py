@@ -45,8 +45,17 @@ class EmissionWriter():
             print (f"frames_per_auxinput13 = {self._getScenarios()[0].getNumberOfProfiles()}")
             print (f"auxinput13_inname = '{self._netcdf_handler.dst_file}'")
             print ("--------------------------")
-            #print(f"Method {func.__name__} executed")  # Post-execution behavior
-            #return result
+            
+            history_string = " "
+            for scenario in self._getScenarios():
+                history_string+=str(scenario)+". \n"
+            
+            self._netcdf_handler.update_file_history(history_string)
+            
+            #Plotting the amount of mass written to the netCDF file
+            #for debugging purposes
+            self._netcdf_handler.check_how_much_has_been_written()
+            
         return wrapper
     
     @abstractmethod    
