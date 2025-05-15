@@ -40,7 +40,9 @@ class VerticalProfile():
     
     def plot(self,*args, **kwargs):
         plt.plot(self.values,self.h/1000.0,'-+', label=f"{str(self)}", *args, **kwargs)
+        self._format_plot()
     
+    def _format_plot(self):
         axes = plt.gca()
         axes.set_ylim([0,30])
         axes.set_xlim(0,0.5)
@@ -71,6 +73,9 @@ class VerticalProfile_Uniform(VerticalProfile):
         if(h_max<h_min):
             raise ValueError('h_max<h_min in Uniform profile')
     
+        self.h_min = h_min
+        self.h_max = h_max
+        
         kts=0
         kte=len(z_at_w)
 
@@ -90,14 +95,13 @@ class VerticalProfile_Uniform(VerticalProfile):
         #profile = self.normalize_by_one(profile)
     
         super().__init__(z_at_w,profile,year,month,day,hour,duration_sec,scale)
+        
+    def __str__(self):
+        return super().__str__()+f" min={self.h_min/1000.0:.2f}, max height {self.h_max/1000.0:.2f} km"
 
-class VerticalProfile_Suzuki(VerticalProfile):
-    pass
-    #def generate_profile(self, height_levels):
-    #    return np.exp(-np.linspace(0, 1, height_levels))
-    
-    '''
-    from scipy.integrate import quad
+    def plot(self,*args, **kwargs):
+        plt.plot(self.values,self.h/1000.0,'-+', label=super().__str__()+f" min={self.h_min/1000.0:.2f}, max height {self.h_max/1000.0:.2f} km", *args, **kwargs)
+        self._format_plot()
 
 
 class VerticalProfile_Suzuki(VerticalProfile):
@@ -184,16 +188,10 @@ class VerticalProfile_Umbrella(VerticalProfile):
                 
         super().__init__(z_at_w,profile,year,month,day,hour,duration_sec,scale)
 
+    def __str__(self):
+        return super().__str__()+f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, \
+            Max Emissions Height {self.emiss_height/1000.0:.2f} km"
+
     def plot(self,*args, **kwargs):
-        plt.plot(self.values,self.h/1000.0,'-+', \
-                 label=f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, \
-                 \nMax Emissions Height {self.emiss_height/1000.0:.2f} km", *args, **kwargs)
-        
-        axes = plt.gca()
-        axes.set_ylim([0,30])
-        axes.set_xlim(0,0.5)
-        plt.xlabel('Mass fraction')
-        plt.ylabel('Altitude, $km$')
-        plt.legend(loc="best")
-        plt.grid(True)
-        plt.show()
+        plt.plot(self.values,self.h/1000.0,'-+', label=f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, Max Emissions Height {self.emiss_height/1000.0:.2f} km", *args, **kwargs)
+        self._format_plot()       
