@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import pandas as pd
-import math
+import json
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
@@ -201,7 +201,12 @@ class EmissionScenario():
         self.__is_divided_by_dh = True
         
 
-class EmissionScenario_InvertedPinatubo(EmissionScenario):
+class EmissionScenario_MixOfProfiles(EmissionScenario):
+    def __init__(self, type_of_emission):
+        super().__init__(type_of_emission)    
+
+
+class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
         super().__init__(type_of_emission)
         
@@ -221,11 +226,107 @@ class EmissionScenario_InvertedPinatubo(EmissionScenario):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))
 
-class EmissionScenario_MixOfProfiles(EmissionScenario):
-    def __init__(self, type_of_emission):
-        super().__init__(type_of_emission)    
+
+class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
+    def __init__(self, type_of_emission, json_filename):
+        super().__init__(type_of_emission)
+        
+        #staggerred_h is from the paper
+        #staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
+         #                   1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
+         #                   8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
+         #                   16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
+         #                   23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 
+         #                   32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
+         #                   42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
+
+        #with open(filename,'rb') as infile:
+        #    _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
+        
+        
+        #json_filename = '/Users/ukhova/Downloads/PrepEmisSources/example_profiles/Eyjafjallajökull_Brodtkorb_2024/inversion_000_1.00000000_a_posteriori_reference.json'
+        json_data = self.__readJson(json_filename)
+        
+        #print(json_data)
+        #times = json_data['emission_times']
+        years = []
+        months = []
+        days = []
+        hours = []
+
+        # Extract components
+        for ts in json_data['emission_times']:
+            dt = datetime.strptime(ts[:26], '%Y-%m-%dT%H:%M:%S.%f')
+            years.append(dt.year)
+            months.append(dt.month)
+            days.append(dt.day)
+            hours.append(dt.hour)
+        
+        staggerred_h = np.array([a for a in np.cumsum(np.concatenate(([json_data['volcano_altitude']], json_data['level_heights'])))])
+        emission_scenario = json_data['a_posteriori']
+        
+        #emission_scenario in [Mt]
+        for i in range(emission_scenario.shape[1]):
+            self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
+                                            months[i],days[i],hours[i],3*60*60))
 
 
+    def __expandVariable(self,emission_times, level_heights, ordering_index, variable):
+        #Make JSON-data into 2d matrix
+        x = np.ma.masked_all(ordering_index.shape)
+        for t in range(len(emission_times)):
+            for a in range(len(level_heights)):
+                emis_index = ordering_index[a, t]
+                if (emis_index >= 0):
+                    x[a, t] = variable[emis_index]
+        return x
+
+    def __readJson(self,json_filename):
+        #Read data
+        with open(json_filename, 'r') as infile:
+            json_string = infile.read()
+
+        #Parse data
+        json_data = json.loads(json_string)
+
+        #Add metadata to json_data
+        #json_data["filename"] = os.path.abspath(json_filename)
+        #json_data["meta"] = json.dumps(json_data)
+
+        #Parse data we care about
+        json_data["emission_times"] = np.array(json_data["emission_times"], dtype='datetime64[ns]')
+        json_data["level_heights"] = np.array(json_data["level_heights"], dtype=np.float64)
+        #volcano_altitude = json_data["volcano_altitude"]
+
+        json_data["ordering_index"] = np.array(json_data["ordering_index"], dtype=np.int64)
+        #json_data["a_priori"] = np.array(json_data["a_priori_2d"], dtype=np.float64)
+        json_data["a_posteriori"] = np.array(json_data["a_posteriori_2d"], dtype=np.float64)
+
+        #json_data["residual"] = np.array(json_data["residual"], dtype=np.float64)
+        #json_data["convergence"] = np.array(json_data["convergence"], dtype=np.float64)
+
+        #json_data["run_date"] = np.array(json_data["run_date"], dtype='datetime64[ns]')
+
+        #Make JSON-data into 2d matrix
+        json_data["a_posteriori"] = self.__expandVariable(json_data["emission_times"], json_data["level_heights"], json_data["ordering_index"], json_data["a_posteriori"])
+        #json_data["a_priori"] = expandVariable(json_data["emission_times"], json_data["level_heights"], json_data["ordering_index"], json_data["a_priori"])
+
+        #Prune any unused a priori elevations and timesteps
+        #if (prune):
+        #    valid_elevations = max(np.flatnonzero((json_data['a_priori'].max(axis=1) + json_data['a_posteriori'].max(axis=1)) > prune_zero)) + 1
+        #    valid_times = np.flatnonzero((json_data['a_priori'].max(axis=0) + json_data['a_posteriori'].max(axis=0)) > prune_zero)
+        #    if valid_times_min is None:
+        #        valid_times_min = min(valid_times)
+        #    if valid_times_max is None:
+        #        valid_times_max = max(valid_times) + 1
+
+            #json_data['a_priori'] = json_data['a_priori'][:valid_elevations,valid_times_min:valid_times_max]
+        #    json_data['a_posteriori'] = json_data['a_posteriori'][:valid_elevations,valid_times_min:valid_times_max]
+        #    json_data["ordering_index"] = json_data["ordering_index"][:valid_elevations,valid_times_min:valid_times_max]
+        #    json_data["emission_times"] = json_data["emission_times"][valid_times_min:valid_times_max]
+        #    json_data["level_heights"] = json_data['level_heights'][:valid_elevations]
+
+        return json_data
 
 '''
 def read_eruption_file(self, filename):
