@@ -142,9 +142,11 @@ class WRFNetCDFWriter:
             raise ValueError("The closest grid cell is at the boundary (0,0).")
         return ii, jj
 
+    #heights of the 'mass' points
     def getColumn_H(self, x, y):
         return np.array(self.__h[:,y,x])
     
+    #heights of the grid cells
     def getColumn_dH(self, x, y):
         return np.array(self.__dh[:,y,x])
     

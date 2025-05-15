@@ -1,3 +1,6 @@
+Different vertical profiles (i.e., different ways to release mass of tephra as a function of plume
+height) can be drawn
+
 #p=VerticalProfile_Suzuki(staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 4)
 #p=VerticalProfile_Umbrella(staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.55,1)
 #p=VerticalProfile_Zero(staggerred_h, YEAR, MONTH, DAY, 4, DURATION)
@@ -174,3 +177,7 @@ A profile representing the classic umbrella-shaped distribution of volcanic erup
 - Vent height
 - Percentage of mass in the umbrella region
 - Distribution of remaining mass in the eruption column
+
+
+### 'VerticalProfile_Suzuki'
+Based on Suzuki et al. (1983) and Mastin and Van Eaton (2020)
