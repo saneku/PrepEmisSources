@@ -1,3 +1,12 @@
+#p=VerticalProfile_Suzuki(staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 4)
+#p=VerticalProfile_Umbrella(staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.55,1)
+#p=VerticalProfile_Zero(staggerred_h, YEAR, MONTH, DAY, 4, DURATION)
+#p=VerticalProfile_Uniform(staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 5000.0, 10000.0, 0.1)
+#p.plot(linestyle='-', color='blue', marker='+')
+#print(p)
+#exit()
+
+
 The modular architecture
 
 the object-oriented design, emphasizing modularity for different eruption types. 

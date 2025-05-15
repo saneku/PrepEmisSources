@@ -28,9 +28,8 @@ If you find this preprocessor useful, please do not forget to cite it as follows
 Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
 
 ## todo:
-- (emis_opt_vol=3,chem_opt=402) in final output of the script?
+- (emiss_opt_vol=3, chem_opt=402) in final output of the script?
 - correct name for 3rd example
-- fix bug if all zero profiles are used at the beginning, then profiles (QV for example) 
-    are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
-- add suzuki profile (ex2.py)
-- plot correctly profiles (ex3)
+- fix bug if all zero profiles are used at the beginning, then profiles (QV for example) are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
+- add Brodtkorb scenario
+- plot profiles correctly (ex3)

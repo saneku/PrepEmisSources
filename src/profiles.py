@@ -1,8 +1,8 @@
-#from abc import ABC, abstractmethod
 import numpy as np
 import calendar
-from datetime import datetime, timedelta
+from datetime import datetime
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 
 class VerticalProfile():
     def __init__(self, staggerred_h,values,year,month,day,hour,duration_sec,scale=1):
@@ -99,28 +99,35 @@ class VerticalProfile_Suzuki(VerticalProfile):
     '''
     from scipy.integrate import quad
 
-    #for Suzuki integrand
-    k_suzuki=4.0
-    H_suzuki=0.0 #top height of the cloud
 
-    def suzuku_integrand(z):
-        return (k_suzuki*k_suzuki*(1-(z/H_suzuki))*np.exp(k_suzuki*((z/H_suzuki)-1)))/(H_suzuki*(1-(1+k_suzuki)*np.exp(-k_suzuki)))
+class VerticalProfile_Suzuki(VerticalProfile):
+    def __init__(self, z_at_w, year, month, day, hour, duration_sec, H=20000, k=8, scale=1):
+        self.H = H   #top height of the cloud
+        self.k = k
+        
+        kte=len(z_at_w)
+        profile = np.zeros(kte)
+    
+        for i in range(0,kte-1,1):
+            bs, err = quad(self.__suzuku_integrand, z_at_w[i],z_at_w[i+1])
+            profile[i] = bs
 
-	#1 Vertical mass rate redistribution according to Suzuki
-	x_b_interp=[]
-	for i in range(0,len(heights_on_level_interfaces)-1):
-	   bs, err = quad(suzuku_integrand, heights_on_level_interfaces[i]/1000.0,heights_on_level_interfaces[i+1]/1000.0)
-	   x_b_interp.append(bs)
-	x_b_interp=np.asarray(x_b_interp)
+        indexes=np.where(profile<0)
+        profile[indexes]=1.0e-06
+        #print(sum(profile)) #normalisation check
+    
+        super().__init__(z_at_w,profile,year,month,day,hour,duration_sec,scale)
 
-	x_b_interp=rates[k]*x_b_interp	#
+    def __suzuku_integrand(self,z):
+        return (self.k * self.k * (1-(z/self.H))*np.exp(self.k*((z/self.H)-1)))/(self.H*(1-(1+self.k)*np.exp(-self.k)))
 
-	indexes=np.where(x_b_interp<0)
-	x_b_interp[indexes]=1.0e-06
-	print ("{:0.6f}".format(np.sum(x_b_interp)))
+    def plot(self,*args, **kwargs):
+        plt.plot(self.values,self.h/1000.0,'-+', label=f"Suzuki K={self.k}, Max Height {self.H/1000.0:.2f} km", *args, **kwargs)
+        self._format_plot()
+      
+    def __str__(self):
+        return super().__str__()+f" K={self.k}, Max Height {self.H/1000.0:.2f} km"
 
-	indexes=np.where(x_b_interp>treshold)[0]
-	'''
 
 class VerticalProfile_Umbrella(VerticalProfile):
     def __init__(self, z_at_w, year, month, day, hour, duration_sec, emiss_height=10000, vent_h=500, percen_mass_umbrela=0.75, scale=1):

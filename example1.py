@@ -24,12 +24,12 @@ if __name__ == "__main__":
     j, i = netcdf_handler.findClosestGridCell(lat=LAT, lon=LON)
     #get the height of the 'mass' points in the wrfinput file
     staggerred_h = netcdf_handler.getColumn_H(i, j)
-
+  
     #Ash Emissions
     ash_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 15000, 1000, 0.55,1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 1000, 0.55,2]),
+        (VerticalProfile_Suzuki, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 25000, 4]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
         (VerticalProfile_Uniform, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 5000.0, 10000.0, 0.1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     so2_profiles = [
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION]),
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION, 25000, 1000, 0.95]),
-        (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 15000, 1000, 0.75]),
+        (VerticalProfile_Suzuki, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 15000, 6]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION, 10000, 1000, 0.55]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     sulfate_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 10000, 1000, 0.95]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION]),
+        (VerticalProfile_Suzuki, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 10000, 8]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     watervapor_profiles = [
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 2, DURATION, 25000, 1000, 0.95,2]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 4, DURATION]),
-        (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION]),
+        (VerticalProfile_Suzuki, [staggerred_h, YEAR, MONTH, DAY, 6, DURATION, 20000, 12]),
         (VerticalProfile_Umbrella, [staggerred_h, YEAR, MONTH, DAY, 8, DURATION, 25000, 1000, 0.95,1]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 10, DURATION]),
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
