@@ -11,9 +11,13 @@ required. Review the provided example*.py files and modify it to suit your speci
 requirements. After the script execution, the necessary adjustments to the namelist.input
 file will be shown. For instance:
 
-    auxinput13_interval_m = 120.0
-    frames_per_auxinput13 = 6
-    auxinput13_inname = 'wrfchemv_d01.1991-06-15_02:00:00'
+    &time_control
+	    auxinput13_interval_m = 120.0
+	    frames_per_auxinput13 = 6
+	    auxinput13_inname     = 'wrfchemv_d01.1991-06-15_02:00:00'
+    &chem
+	    chem_opt               = 402
+	    emiss_opt_vol          = 3
 
 It means that prepared emission file 'wrfchemv_d01.1991-06-15_02:00:00' will be
 read by WRF-Chem 6 times starting from the moment when the model time will pass 
@@ -28,7 +32,6 @@ If you find this preprocessor useful, please do not forget to cite it as follows
 Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
 
 ## todo:
-- (emiss_opt_vol=3, chem_opt=402) in final output of the script?
 - correct name for 3rd example
 - fix bug if all zero profiles are used at the beginning, then profiles (QV for example) are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
 - add Brodtkorb scenario

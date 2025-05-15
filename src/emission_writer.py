@@ -40,10 +40,13 @@ class EmissionWriter():
 
             print ("--------------------------")
             print ("Set the following parameters in the namelist.input: ")
-            print (f"auxinput13_interval_m = {self._output_interval}")
-            #print (f"frames_per_auxinput13 = {scenario.getNumberOfProfiles()}")
-            print (f"frames_per_auxinput13 = {self._getScenarios()[0].getNumberOfProfiles()}")
-            print (f"auxinput13_inname = '{self._netcdf_handler.dst_file}'")
+            print (f"&time_control")
+            print (f"\tauxinput13_interval_m = {self._output_interval}")
+            print (f"\tframes_per_auxinput13 = {self._getScenarios()[0].getNumberOfProfiles()}")
+            print (f"\tauxinput13_inname     = '{self._netcdf_handler.dst_file}'")
+            print("&chem")
+            print ("\tchem_opt               = 402")
+            print ("\temiss_opt_vol          = 3")
             print ("--------------------------")
             
             history_string = " "
