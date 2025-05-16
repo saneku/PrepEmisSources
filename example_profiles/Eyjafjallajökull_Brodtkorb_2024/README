@@ -1,0 +1,10 @@
+Eyjafjallajökull ash emission profiles. Details in [1].
+There is no information on the ash size distribution as well as total amount of emitted ash.
+
+References:
+[1] Brodtkorb, A. R., Benedictow, A., Klein, H., Kylling, A., Nyiri, A., Valdebenito, A.,
+   Sollum, E., and Kristiansen, N.: Estimating volcanic ash emissions using retrieved
+   satellite ash columns and inverse ash transport modeling using VolcanicAshInversion v1.2.1,
+    within the operational eEMEP (emergency European Monitoring and Evaluation Programme)
+    volcanic plume forecasting system (version rv4_17),
+    Geosci. Model Dev., 17, 1957–1974, https://doi.org/10.5194/gmd-17-1957-2024, 2024.

@@ -32,7 +32,6 @@ If you find this preprocessor useful, please do not forget to cite it as follows
 Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
 
 ## todo:
-- correct name for 3rd example
 - fix bug if all zero profiles are used at the beginning, then profiles (QV for example) are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
-- add Brodtkorb scenario
-- plot profiles correctly (ex3)
+- finish EmissionWriter_NonUniformInTimeProfiles in ex4.py
+- use plot_profiles for some examples

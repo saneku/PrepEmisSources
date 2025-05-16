@@ -7,11 +7,18 @@ import numpy as np
 # The profiles are given in the JSON format at 3 hour intervals.
 
 if __name__ == "__main__":
-    # Prescribe the location of the volcano
+    # Prescribe the location of the Eyjafjallajökull volcano
+    #LAT, LON = 63.6314, 19.6083
+    
+    #use the location of the Pinatubo volcano for testing
     LAT, LON = 15.1429, 120.3496
     
     scenarios = [
-                EmissionScenario_Inverted_Eyjafjallajokull(Emission_SO2(mass_mt=15.54,lat=LAT, lon=LON),
+                # No info on the total ash emission and ash size distribution,
+                # therefore Pinatubo values on ash size distribution are used.
+                # Internet says that the eruption of the Eyjafjallajökull volcano
+                # produced 40.0 Mt of ash. So, will use this value.
+                EmissionScenario_Inverted_Eyjafjallajokull(Emission_Ash(mass_mt=40.0,lat=LAT, lon=LON,bin_n=10,mean_r=2.4,stddev=1.8),
                     './example_profiles/Eyjafjallajökull_Brodtkorb_2024/inversion_000_1.00000000_a_posteriori_reference.json'),
                 ]
     

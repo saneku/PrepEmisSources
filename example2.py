@@ -7,7 +7,7 @@ import numpy as np
 # Inverted profiles are interpolated to 10 minute intervals.
 
 if __name__ == "__main__":
-    # Prescribe the location of the volcano
+    # Prescribe the location of the Pinatubo volcano
     LAT, LON = 15.1429, 120.3496
     
     scenarios = [

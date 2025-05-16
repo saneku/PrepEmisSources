@@ -5,7 +5,7 @@ import json
 from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-
+from matplotlib.colors import LinearSegmentedColormap
 from .profiles import *
 from .emissions import *
 
@@ -91,7 +91,7 @@ class EmissionScenario():
         
         self.__is_normalized_by_total_mass = True
     
-    def plot(self,*args, **kwargs):
+    def plot_profiles(self,*args, **kwargs):
         scale_factor=2000.0#*1000.0
         
         if (self.__is_divided_by_dh):
@@ -113,6 +113,94 @@ class EmissionScenario():
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
         plt.xticks(hours)
+       
+        plt.title(self)
+        
+        plt.grid(True,alpha=0.3)
+        plt.show()
+  
+    def __getColorMap(self,colormap = 'stohl', bins=256):
+        #taken from https://github.com/metno/VolcanicAshInversion/
+        
+        #If we already have a colormap
+        if (not isinstance(colormap, str)):
+            return colormap
+
+        colors = [
+            (0.0, (1.0, 1.0, 0.8)),
+            (0.05, (0.0, 1.0, 0.0)),
+            (0.4, (0.9, 1.0, 0.2)),
+            (0.6, (1.0, 0.0, 0.0)),
+            (1.0, (0.6, 0.2, 1.0))
+        ]
+        if (colormap == 'default'):
+            pass
+        elif (colormap == 'ippc'):
+            colors = [
+                (0.0/4, (1.0, 1.0, 1.0)), #0-0.2 g/m2 white
+                (0.2/4, (0.498, 0.996, 0.996)), #0.2-2.0 g/m2 turquoise
+                (2.0/4, (0.573, 0.58, 0.592)), #2.0-4.0 g/m2 gray
+                (4.0/4, (0.875, 0.012, 0.012)) # >4.0 g/m2 red
+            ]
+            bins = 5
+        elif (colormap == 'alternative'):
+            colors = [
+                (0.0, (1.0, 1.0, 0.6)),
+                (0.4, (0.9, 1.0, 0.2)),
+                (0.6, (1.0, 0.8, 0.0)),
+                (0.7, (1.0, 0.4, 0.0)),
+                (0.8, (1.0, 0.0, 0.0)),
+                (0.9, (1.0, 0.2, 0.6)),
+                (1.0, (0.6, 0.2, 1.0))
+            ]
+        elif (colormap == 'birthe'):
+            colors = [
+                ( 0/35, ("#ffffff")),
+                ( 4/35, ("#b2e5f9")),
+                (13/35, ("#538fc9")),
+                (18/35, ("#47b54c")),
+                (25/35, ("#f5e73c")),
+                (35/35, ("#df2b24"))
+            ]
+        elif (colormap == 'stohl'):
+            colors = [
+                ( 0.00/10, ("#ffffff")),
+                ( 0.35/10, ("#ffe5e2")),
+                ( 0.60/10, ("#b1d9e6")),
+                ( 1.00/10, ("#98e8a8")),
+                ( 2.00/10, ("#fffc00")),
+                ( 5.00/10, ("#ff0d00")),
+                (10.00/10, ("#910000"))
+            ]
+        else:
+            # Assume this is a standard matplotlib colormap name
+            return colormap
+            
+        cm = LinearSegmentedColormap.from_list('ash', colors, N=bins)
+        cm.set_bad(alpha = 0.0)
+
+        return cm
+  
+    def plot(self,*args, **kwargs):
+        
+        scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
+        h = self.profiles[0].h
+        times = [profile.start_datetime for profile in self.profiles]
+        
+        fig = plt.figure(figsize=(18,7))
+        plt.pcolormesh(times, h/1000.0, scenario_2d_array, shading='auto', 
+                       cmap=self.__getColorMap())
+        plt.colorbar(label='Emissions')#,orientation='horizontal')
+
+        plt.ylim(0.0, 40)
+        #plt.xlim(0.0,0.03)
+        plt.ylabel('Altitude, $km$')
+        plt.xlabel('Datetime')
+
+        plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
+        plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
+        plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
+        #plt.xticks(hours)
        
         plt.title(self)
         
@@ -231,45 +319,27 @@ class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
     def __init__(self, type_of_emission, json_filename):
         super().__init__(type_of_emission)
         
-        #staggerred_h is from the paper
-        #staggerred_h = np.array([91.56439, 168.86765, 273.9505, 407.21893, 574.90356, 788.33356, 1050.1624, 1419.9668, 
-         #                   1885.3608, 2372.2937, 2883.3193, 3634.4663, 4613.3403, 5594.8545, 6580.381, 7568.5386, 
-         #                   8558.1455, 9547.174, 10534.043, 11518.861, 12501.9375, 13484.473, 14454.277, 15393.3125, 
-         #                   16300.045, 17189.598, 18083.797, 18998.496, 19939.57, 20905.723, 21890.363, 22886.46, 
-         #                   23890.441, 24900.914, 25918.307, 26943.252, 27977.344, 29021.828, 30077.21, 31143.973, 
-         #                   32221.8, 33310.13, 34408.86, 35517.9, 36637.133, 37766.45, 38905.723, 40054.82, 41213.594, 
-         #                   42381.883, 43559.504, 44746.254, 45941.914, 47146.22])
-
-        #with open(filename,'rb') as infile:
-        #    _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-        
-        
-        #json_filename = '/Users/ukhova/Downloads/PrepEmisSources/example_profiles/Eyjafjallajökull_Brodtkorb_2024/inversion_000_1.00000000_a_posteriori_reference.json'
         json_data = self.__readJson(json_filename)
-        
-        #print(json_data)
-        #times = json_data['emission_times']
-        years = []
-        months = []
-        days = []
-        hours = []
+        years,months,days,hours = [],[],[],[]
 
-        # Extract components
         for ts in json_data['emission_times']:
-            dt = datetime.strptime(ts[:26], '%Y-%m-%dT%H:%M:%S.%f')
+            dt = pd.to_datetime(ts).to_pydatetime()
             years.append(dt.year)
             months.append(dt.month)
             days.append(dt.day)
             hours.append(dt.hour)
         
-        staggerred_h = np.array([a for a in np.cumsum(np.concatenate(([json_data['volcano_altitude']], json_data['level_heights'])))])
-        emission_scenario = json_data['a_posteriori']
+        #h - height of the levels
+        h = np.array([a for a in np.cumsum(np.concatenate(([json_data['volcano_altitude']], json_data['level_heights'])))])
+        #staggerred_h - height of the 'mass' points
+        staggerred_h = h[0:-1] + 0.5 * json_data['level_heights']
+        emission_scenario = np.array(json_data['a_posteriori'])
         
-        #emission_scenario in [Mt]
+        emission_scenario *= 1e-9   #emission_scenario in [Mt/m/s] now
+        self.__is_divided_by_dh = True
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],3*60*60))
-
 
     def __expandVariable(self,emission_times, level_heights, ordering_index, variable):
         #Make JSON-data into 2d matrix
@@ -327,27 +397,3 @@ class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
         #    json_data["level_heights"] = json_data['level_heights'][:valid_elevations]
 
         return json_data
-
-'''
-def read_eruption_file(self, filename):
-    # Read the file
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-
-    # Extract dimensions from the first two lines
-    self.rows = int(lines[0].strip())
-    self.cols = int(lines[1].strip())
-    
-    self.years = int(lines[2].strip())
-    self.months = int(lines[3].strip())
-    self.days = int(lines[4].strip())
-    self.hours = int(lines[5].strip())
-    self.duration_sec = int(lines[6].strip())
-
-    # Extract the array data starting from the 8th line (index 7) for 'rows' number of lines
-    emission_scenario = []
-    for line in lines[7 : 7 + self.rows]:
-        row = list(map(float, line.strip().split()))
-        array_data.append(row)
-    # array_data is now a 2D list (rows x cols) containing the values from the file
-'''
