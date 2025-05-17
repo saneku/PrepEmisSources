@@ -206,6 +206,11 @@ class WRFNetCDFWriter:
             #sigma = np.log(1.8)
             #ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
             
+            #make sure that the last profile is a zero profile
+            if scenario.profiles[-1].getProfileEmittedMass()!=0.0:
+                print(f"Last profile in {str(scenario)[0:40]}... has non-zero emissions. Please add VerticalProfile_Zero profile")
+                exit(1)
+            
             scenario.normalize_by_total_mass()
             
             self.__do_only_once(scenario, x, y)

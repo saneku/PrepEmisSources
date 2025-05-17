@@ -34,5 +34,4 @@ Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
 ## todo:
 - fix bug if all zero profiles are used at the beginning, then profiles (QV for example) are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).
 - use plot_profiles for some examples
-- add zero profile to ex4.
-- add check that last interval are zero emissions.
+- fix datetimes in accumulated emissions
