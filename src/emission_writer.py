@@ -7,8 +7,7 @@ import numpy as np
 class EmissionWriter():
     def __init__(self, scenarios, netcdf_handler,output_interval=60):
         
-        self._output_interval = output_interval  #minutes
-        self._only_once=False
+        self._output_interval = output_interval  #minutes        
         
         for i,scenario in enumerate(scenarios):
             if not isinstance(scenario, EmissionScenario):
@@ -66,7 +65,9 @@ class EmissionWriter():
         raise NotImplementedError("Abstract method 'write' must be implemented in subclass of EmissionWriter")
 
 
-class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
+# interpolate profiles in time (to uniform time intervals) 
+# and height using the wrfinput vertical grid, ad divide by dh to convert from Mt to Mt/m
+class EmissionWriter_NonUniformInTimeHeightProfiles(EmissionWriter):
 
     @EmissionWriter._postAmbula
     def write(self):
@@ -74,28 +75,31 @@ class EmissionWriter_NonUniformInTimeProfiles(EmissionWriter):
             scenario.interpolate_time(self._output_interval) # minutes time intervals to interpolate to
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
-            #todo: optimize this
-            if not self._only_once:
-                self._netcdf_handler.prepare_file(scenario.getStartDateTime())#.replace(minute=0, second=0, microsecond=0))
-
-                self._netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
-                start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration() # for example, s=165002, d=10 (minutes)
-                
-                self._netcdf_handler.write_to_cell("E_START",start_time,0,x,y)
-                #self.__netcdf_handler.write_to_cell("E_DURM",duration,0,x,y)
-
-                self._only_once=True
-
-            #divide by dh to convert from Mt to Mt/m
             scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
+            #divide by dh to convert from Mt to Mt/m
             scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
 
             #scenario.plot(linestyle='-', color='blue', marker='+')
-            scenario.normalize_by_total_mass()
             
             self._netcdf_handler.write_material(scenario,x,y)
 
 
+# interpolate only profiles height using the wrfinput vertical grid.
+# no divide by dh as the profiles are already in Mt/m/s
+class EmissionWriter_NonUniformInHeightProfiles(EmissionWriter):
+
+    @EmissionWriter._postAmbula
+    def write(self):
+        for scenario in self._getScenarios():
+            y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
+
+            scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
+
+            #scenario.plot(linestyle='-', color='blue', marker='+')
+            
+            self._netcdf_handler.write_material(scenario,x,y)
+
+# no interpolation of the profiles in time and height
 class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
 
     @EmissionWriter._postAmbula
@@ -103,15 +107,6 @@ class EmissionWriter_UniformInTimeProfiles(EmissionWriter):
         for scenario in self._getScenarios():
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
-            #todo: optimize this
-            if not self._only_once:
-                self._netcdf_handler.prepare_file(scenario.getStartDateTime())
-                self._netcdf_handler.write_times(scenario.get_profiles_StartDateTime())
-                start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration()
-                self._netcdf_handler.write_to_cell("E_START",start_time,0,x,y)
-                self._only_once=True
-
-            #scenario.plot(linestyle='-', color='blue', marker='+')
-            scenario.normalize_by_total_mass()
+            #scenario.plot(linestyle='-', color='red', marker='o')
 
             self._netcdf_handler.write_material(scenario,x,y)

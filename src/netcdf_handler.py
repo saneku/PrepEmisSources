@@ -12,6 +12,8 @@ class WRFNetCDFWriter:
         self.source_dir = source_dir
         self.orgn_wrf_input_file = wrf_input_file
         
+        self.__only_once = False
+        
         self.__emissions = {
                 "ash": {"var": "E_VASH", "mass_factor": 1e18, "time_factor": 1, "color": 'grey'},
                 "so2": {"var": "E_VSO2", "mass_factor": 1e18, "time_factor": 60, "color": 'blue'},
@@ -184,6 +186,15 @@ class WRFNetCDFWriter:
                     for i,_ in enumerate(aux_times):
                         var[i,:]=var[0,:]
 
+    def __do_only_once(self, scenario, x, y):
+        if not self.__only_once:
+            self.prepare_file(scenario.getStartDateTime())
+            self.write_times(scenario.get_profiles_StartDateTime())
+            start_time,duration = scenario.get_profiles_Decimal_StartTimeAndDuration() # for example, s=165002, d=10 (minutes)
+            self.write_to_cell("E_START",start_time,0,x,y)
+            self.__only_once = True
+
+
     def write_material(self, scenario, x, y):                       
             #Rescaled from GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
                                              #0.001 0.012 0.071 0.336 0.443
@@ -194,6 +205,10 @@ class WRFNetCDFWriter:
             #mu = np.log(2*2.4)  # 2.4 median radii!!!
             #sigma = np.log(1.8)
             #ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
+            
+            scenario.normalize_by_total_mass()
+            
+            self.__do_only_once(scenario, x, y)
             
             material_name = scenario.type_of_emission.get_name_of_material()
             if material_name not in self.__emissions:

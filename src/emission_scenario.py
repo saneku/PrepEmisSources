@@ -15,7 +15,7 @@ class EmissionScenario():
         self.__is_divided_by_dh = False
         self.__is_normalized_by_total_mass = False
         self.__is_height_adjusted = False
-        self.__is_time_adjusted = False
+        #self.__is_time_adjusted = False
 
         if (isinstance(type_of_emission, Emission) == False):
             raise TypeError("type_of_emission must be an instance of Emission")
@@ -187,24 +187,24 @@ class EmissionScenario():
         h = self.profiles[0].h
         times = [profile.start_datetime for profile in self.profiles]
         
-        fig = plt.figure(figsize=(18,7))
-        plt.pcolormesh(times, h/1000.0, scenario_2d_array, shading='auto', 
-                       cmap=self.__getColorMap())
-        plt.colorbar(label='Emissions')#,orientation='horizontal')
+        fig = plt.figure(figsize=(14,7))
+        
+        plt.pcolormesh(times, h/1000.0, scenario_2d_array,alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
+        cs=plt.pcolormesh(times, h/1000.0, scenario_2d_array,cmap=self.__getColorMap())
+        
+        plt.colorbar(cs,label='Emissions')
 
         plt.ylim(0.0, 40)
-        #plt.xlim(0.0,0.03)
         plt.ylabel('Altitude, $km$')
         plt.xlabel('Datetime')
 
         plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
-        #plt.xticks(hours)
        
         plt.title(self)
         
-        plt.grid(True,alpha=0.3)
+        #plt.grid(True,alpha=0.3)
         plt.show()
   
     def __str__(self):
@@ -264,11 +264,11 @@ class EmissionScenario():
         self.profiles[-1].values *=0
         self.profiles[-1].erup_beg=0
 
-        self.__is_time_adjusted = True
+        #self.__is_time_adjusted = True
 
     def interpolate_height(self,new_height):        
-        if (self.__is_time_adjusted == False):    
-            raise ValueError('Time must be adjusted before adjusting height')
+        #if (self.__is_time_adjusted == False):    
+        #    raise ValueError('Time must be adjusted before adjusting height')
         
         if(np.all(new_height[1:] > new_height[:-1])==False):
             raise ValueError('new_height must be monotonically increasing')

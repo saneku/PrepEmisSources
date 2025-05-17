@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # Profiles are interpolated into the required vertical grid
     # and divided by the height of the grid cell to convert from Mt to Mt/m
     # The profiles are normalized by the total mass.
-    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
+    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 10)
     emission_writer.write()
 
     #for p in scenarios[0].profiles:

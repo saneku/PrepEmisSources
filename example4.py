@@ -14,7 +14,7 @@ if __name__ == "__main__":
     LAT, LON = 15.1429, 120.3496
     
     scenarios = [
-                # No info on the total ash emission and ash size distribution,
+                # No information on the total ash emission and ash size distribution,
                 # therefore Pinatubo values on ash size distribution are used.
                 # Internet says that the eruption of the Eyjafjallajökull volcano
                 # produced 40.0 Mt of ash. So, will use this value.
@@ -31,7 +31,8 @@ if __name__ == "__main__":
     # Profiles are interpolated into the required vertical grid
     # and divided by the height of the grid cell to convert from Mt to Mt/m
     # The profiles are normalized by the total mass.
-    emission_writer = EmissionWriter_NonUniformInTimeProfiles(scenarios, netcdf_handler, 10)
+    # output interval is 3 hours (3*60)
+    emission_writer = EmissionWriter_NonUniformInHeightProfiles(scenarios, netcdf_handler, 3*60)
     emission_writer.write()
 
     #for p in scenarios[0].profiles:
