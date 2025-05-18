@@ -24,7 +24,8 @@ class EmissionWriter():
 
     def plot_scenarios(self):
         for scenario in self._getScenarios():
-            scenario.plot()#linestyle='-', color='blue')
+            scenario.plot()
+            #scenario.plot_profiles()#linestyle='-', color='blue')
 
     @staticmethod
     def _postAmbula(func):

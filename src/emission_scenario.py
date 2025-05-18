@@ -103,7 +103,7 @@ class EmissionScenario():
             x_values = scale_factor * profile.values + profile.hour
             y_values = profile.h / 1000.0
             plt.plot(x_values, y_values, *args, **kwargs)
-            
+        
         plt.ylim(0.0, 40)
         #plt.xlim(0.0,0.03)
         plt.ylabel('Altitude, $km$')
@@ -187,9 +187,16 @@ class EmissionScenario():
         h = self.profiles[0].h
         times = [profile.start_datetime for profile in self.profiles]
         
+        # Shift times by half the interval for correct pcolormesh alignment
+        if len(times) > 1:
+            dt = (times[1] - times[0]) / 2
+            times_shifted = [t + dt for t in times]
+        else:
+            times_shifted = times
+            
         fig = plt.figure(figsize=(14,7))
-        plt.pcolormesh(times, h/1000.0, scenario_2d_array,alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
-        cs=plt.pcolormesh(times, h/1000.0, scenario_2d_array,cmap=self.__getColorMap())
+        plt.pcolormesh(times_shifted, h/1000.0, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
+        cs=plt.pcolormesh(times_shifted, h/1000.0, scenario_2d_array,cmap=self.__getColorMap())
         plt.colorbar(cs,label='Emissions')
 
         plt.ylim(0.0, 40)
@@ -269,7 +276,9 @@ class EmissionScenario():
             raise ValueError('new_height must be monotonically increasing')
         
         for profile in self.profiles:
-            profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
+            #profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
+            profile.values = np.maximum(interp1d(profile.h, profile.values, kind='linear', bounds_error=False, fill_value=0)(new_height), 0)
+
             profile.h=new_height
         
         self.__is_height_adjusted = True
