@@ -30,6 +30,3 @@ reaches ‘1991-06-15 02:00:00’. The interval between each reading is 120 minu
 ## How to cite:
 If you find this preprocessor useful, please do not forget to cite it as follows:
 Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
-
-## todo:
-- fix bug if all zero profiles are used at the beginning, then profiles (QV for example) are not written to the netcdf file, But plot_how_much_was_written shows that they were written!!! (ex1.py).

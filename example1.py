@@ -17,7 +17,7 @@ if __name__ == "__main__":
     # Prescribe the location of the volcano, start date, and profile's duration in seconds
     LAT, LON = 15.1429, 120.3496
     YEAR, MONTH, DAY = 1991, 6, 15
-    DURATION = 7200
+    DURATION = 7200     # seconds
 
     # find the location of the volcano using the information from the wrfinput file
     netcdf_handler = WRFNetCDFWriter(source_dir="./")

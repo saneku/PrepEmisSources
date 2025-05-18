@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # Profiles are interpolated into the required vertical grid
     # and divided by the height of the grid cell to convert from Mt to Mt/m
     # The profiles are normalized by the total mass.
-    # output interval is 3 hours (3*60)
+    # output interval is 3 hours (3*60)=180 minutes
     emission_writer = EmissionWriter_NonUniformInHeightProfiles(scenarios, netcdf_handler, 3*60)
     emission_writer.write()
 
