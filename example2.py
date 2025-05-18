@@ -12,13 +12,13 @@ if __name__ == "__main__":
     
     scenarios = [
                 EmissionScenario_Inverted_Pinatubo(Emission_Ash(mass_mt=66.53,lat=LAT, lon=LON,bin_n=10,mean_r=2.4,stddev=1.8),
-                                                    './example_profiles/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
+                                                    './scenarios/Pinatubo_Ukhov_2023/ash_2d_emission_profiles'),
 
                 EmissionScenario_Inverted_Pinatubo(Emission_SO2(mass_mt=15.54,lat=LAT, lon=LON),
-                                                     './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles'),
+                                                     './scenarios/Pinatubo_Ukhov_2023/so2_2d_emission_profiles'),
                 
                 EmissionScenario_Inverted_Pinatubo(Emission_WaterVapor(mass_mt=100.0,lat=LAT, lon=LON),
-                                                     './example_profiles/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
+                                                     './scenarios/Pinatubo_Ukhov_2023/so2_2d_emission_profiles')
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 ]
     

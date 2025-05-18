@@ -19,7 +19,7 @@ if __name__ == "__main__":
                 # Internet says that the eruption of the Eyjafjallajökull volcano
                 # produced 40.0 Mt of ash. So, will use this value.
                 EmissionScenario_Inverted_Eyjafjallajokull(Emission_Ash(mass_mt=40.0,lat=LAT, lon=LON,bin_n=10,mean_r=2.4,stddev=1.8),
-                    './example_profiles/Eyjafjallajökull_Brodtkorb_2024/inversion_000_1.00000000_a_posteriori_reference.json'),
+                    './scenarios/Eyjafjallajökull_Brodtkorb_2024/inversion_000_1.00000000_a_posteriori_reference.json'),
                 ]
     
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
