@@ -263,5 +263,6 @@ class WRFNetCDFWriter:
         plt.legend(loc="best")
         plt.grid(True, alpha=0.3)
         plt.ylim([0, 80])
-        plt.gca().get_xaxis().set_major_formatter(DateFormatter('%H:%M'))
+        plt.gca().get_xaxis().set_major_formatter(DateFormatter('%m-%d %H:%M'))
+        plt.gca().get_xaxis().set_minor_locator(plt.MultipleLocator(1))
         plt.show()
