@@ -7,11 +7,8 @@ import numpy as np
 # The profiles are given in the JSON format at 3 hour intervals.
 
 if __name__ == "__main__":
-    # Prescribe the location of the Eyjafjallajökull volcano
-    #LAT, LON = 63.6314, 19.6083
-    
-    #use the location of the Pinatubo volcano for testing
-    LAT, LON = 15.1429, 120.3496
+    #Location of the Eyjafjallajökull volcano
+    LAT, LON = 63.6314, 19.6083
     
     scenarios = [
                 # No information on the total ash emission and ash size distribution,

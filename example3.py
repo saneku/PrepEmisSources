@@ -8,7 +8,7 @@ import numpy as np
 # See the corresponding paper for the reference.
 
 if __name__ == "__main__":
-    # Prescribe the location of the volcano
+    # Location of the Pinatubo volcano
     LAT, LON = 15.1429, 120.3496
     YEAR, MONTH, DAY = 1991, 6, 15
     DURATION = 7200    #seconds

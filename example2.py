@@ -7,7 +7,7 @@ import numpy as np
 # Inverted profiles are interpolated to 10 minute intervals.
 
 if __name__ == "__main__":
-    # Prescribe the location of the Pinatubo volcano
+    # Location of the Pinatubo volcano
     LAT, LON = 15.1429, 120.3496
     
     scenarios = [
@@ -28,15 +28,15 @@ if __name__ == "__main__":
     # and divided by the height of the grid cell to convert from Mt to Mt/m
     # The profiles are normalized by the total mass. Interval between profiles is 60 minutes.
     emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 60)
-
+    
     emission_writer.plot_scenarios()
-    # Plot scenarios separate
+    # Plot the scenarios
     #scenarios[0].plot()
     #scenarios[1].plot()
     #scenarios[2].plot()
     #scenarios[0].plot(linestyle='--', color='grey', marker='')
 
-
+    
     emission_writer.write()
 
     #for p in scenarios[0].profiles:
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     #        print (f"Mass {sum(p.values):.2f}")
 
     emission_writer.plot_scenarios()
-    # Plot scenarios separate
+    # Plot the scenarios
     #scenarios[0].plot()
     #scenarios[1].plot()
     #scenarios[2].plot()
