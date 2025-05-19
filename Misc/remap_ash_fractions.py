@@ -1,14 +1,12 @@
-from netCDF4 import Dataset
 import numpy as np
-import os
-import xarray as xr
-import ukhov_jgr_supplementary as supplement
-from scipy.interpolate import interp1d
-from pandas import *
-import datetime
-import calendar
+from pandas import DataFrame
+
+#Diametr (um)
+ra_gocart=np.array([ 0.2, 2. , 3.6, 6. , 12. ])
+rb_gocart=np.array([ 2. , 3.6, 6. , 12., 20. ])
 
 gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
+print (gocart_fractions)
 
 ndust=5
 nbin_o=10
@@ -17,11 +15,8 @@ nbin_o=10
 dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
 dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
 
-#Radii (um)
-ra_gocart=np.array([0.1,1.0,1.8,3.0,6.0])
-rb_gocart=np.array([1.0,1.8,3.0,6.0,10.0])
-dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
 
+dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
 '''
 3138   │ !1       1000    2000    -1 6.5  0   6.5     13  22  24  22  2.92    2.92    0  !
 3139   │ !2       500     1000    0  12  4   12  20  5   25  5   3.55    3.55    0   !
@@ -36,18 +31,16 @@ dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
 '''
 
 for m in range(0,ndust):  # loop over dust size bins
-	dlogoc = ra_gocart[m]*2.0  # low diameter limit
-	dhigoc = rb_gocart[m]*2.0  # hi diameter limit
+	dlogoc = ra_gocart[m]  # low diameter limit
+	dhigoc = rb_gocart[m]  # hi diameter limit
 
 	for n in range(0,4):
 		dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
-
 
 #Flip dustfrc_goc10bin_ln because the smallest bin is Bin10, largset is Bin1
 dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
 print (DataFrame(dustfrc_goc10bin_ln))
 
-print (gocart_fractions)
 
 for i in range(6,10)[::-1]:
     print (f"\nAsh{i+1}=",end='')
@@ -75,4 +68,11 @@ print(total_sum)
 # dust4  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.619178  0.380822  0.000000
 # dust5  0.0  0.0  0.0  0.0  0.0  0.0  0.483257  0.516743  0.000000  0.000000
 
-exit()
+'''
+Ash10=0.03118361373822074
+Ash9=0.2511861890351982
+Ash8=0.5054803574965663
+Ash7=0.21214983973001478
+Ash1, Ash2, Ash3, Ash4, ... , Ash9, Ash10
+[0,0,0,0,0,0,0.2109,0.5060,0.2519,0.03120]
+'''

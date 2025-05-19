@@ -24,22 +24,27 @@ if __name__ == "__main__":
     
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
 
-    # Plot the scenarios
-    scenarios[0].plot()
-    scenarios[1].plot()
-    scenarios[2].plot()
-    #scenarios[0].plot(linestyle='--', color='grey', marker='')
-
     # Profiles are interpolated into the required vertical grid
     # and divided by the height of the grid cell to convert from Mt to Mt/m
-    # The profiles are normalized by the total mass.
-    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 10)
+    # The profiles are normalized by the total mass. Interval between profiles is 60 minutes.
+    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 60)
+
+    emission_writer.plot_scenarios()
+    # Plot scenarios separate
+    #scenarios[0].plot()
+    #scenarios[1].plot()
+    #scenarios[2].plot()
+    #scenarios[0].plot(linestyle='--', color='grey', marker='')
+
+
     emission_writer.write()
 
     #for p in scenarios[0].profiles:
     #        p.plot()
     #        print (f"Mass {sum(p.values):.2f}")
 
-    scenarios[0].plot()
-    scenarios[1].plot()
-    scenarios[2].plot()
+    emission_writer.plot_scenarios()
+    # Plot scenarios separate
+    #scenarios[0].plot()
+    #scenarios[1].plot()
+    #scenarios[2].plot()

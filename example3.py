@@ -67,9 +67,9 @@ if __name__ == "__main__":
     for p, args in watervapor_profiles:
         watervapor_scenario.add_profile(p(*args))
 
-    #Passing all scenarios to the EmissionWriter
+    #Passing all scenarios to the EmissionWriter. Interval between profiles is 120 minutes.
     emission_writer = EmissionWriter_UniformInTimeProfiles([ash_scenario,so2_scenario,sulfate_scenario,watervapor_scenario], \
-                                                           netcdf_handler, DURATION/60)
+                                                           netcdf_handler, 120)
     emission_writer.write()
 
     #Plotting the scenarios

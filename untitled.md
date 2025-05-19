@@ -9,7 +9,7 @@ height) can be drawn
 #print(p)
 #exit()
 
-afer some modifications can be used with another chem_opt's
+afer some modifications can be used with another chem_opts
 
 wrf-chem reads the data from emision file at psecified time intervals.
 
