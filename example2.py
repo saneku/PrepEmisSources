@@ -4,7 +4,7 @@ import numpy as np
 # Example 2:
 # Emisson profiles of ash and SO2 are obtained by inversion (Ukhov et al. 2023). 
 # Water vapor emission is set to 100 Mt, with the same profile as SO2.
-# Inverted profiles are interpolated to 10 minute intervals.
+# Inverted profiles are interpolated to 60 minute intervals.
 
 if __name__ == "__main__":
     # Location of the Pinatubo volcano
