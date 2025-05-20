@@ -17,8 +17,6 @@ The path to the WRF-Chem's file with initial conditions (wrfinput_d01, for examp
 
 These settings mean that the prepared emission file 'wrfchemv_d01.1991-06-15_02:00:00' will be read by WRF-Chem 85 times, starting from the moment when the model time passes '1991-06-15 01:40:00'. The interval between readings of the emission file is 10 minutes. During the run, the WRF-Chem will read the data from the emission file at the 10 minutes intervals. Within each interval corresponding vertical distribution of emissions will be used.
 
-
-
 ## How to cite:
 If you find this preprocessor useful, please do not forget to cite it as follows:
-Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.X
+Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.1
