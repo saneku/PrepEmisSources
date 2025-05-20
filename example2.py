@@ -4,7 +4,7 @@ import numpy as np
 # Example 2:
 # Emisson profiles of ash and SO2 are obtained by inversion (Ukhov et al. 2023). 
 # Water vapor emission is set to 100 Mt, with the same profile as SO2.
-# Inverted profiles are interpolated to 60 minute intervals.
+# Inverted profiles are interpolated to 10 minute intervals.
 
 if __name__ == "__main__":
     # Location of the Pinatubo volcano
@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     # Profiles are interpolated into the required vertical grid
     # and divided by the height of the grid cell to convert from Mt to Mt/m
-    # The profiles are normalized by the total mass. Interval between profiles is 60 minutes.
-    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 60)
+    # The profiles are normalized by the total mass. Interval between profiles is 10 minutes.
+    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 10)
     
     emission_writer.plot_scenarios()
     # Plot the scenarios

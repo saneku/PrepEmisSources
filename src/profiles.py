@@ -45,20 +45,15 @@ class VerticalProfile():
     def _format_plot(self):
         axes = plt.gca()
         axes.set_ylim([0,30])
-        axes.set_xlim(0,0.5)
-        #plt.title("Mass Fractions")
+        axes.set_xlim(-0.05,0.35)
         plt.xlabel('Mass fraction',fontsize=10)
-        plt.ylabel('Altitude ,km',fontsize=10)
+        plt.ylabel('Altitude, km',fontsize=10)
         plt.legend(loc="best")
         plt.grid(True)
         plt.show()
         
     def normalize_by_one(self,arr):
         return arr / np.sum(arr)
-
-    #@abstractmethod
-    #def generate_profile(self, height_levels):
-    #    pass
 
 class VerticalProfile_Zero(VerticalProfile):
     def __init__(self, z_at_m, year, month, day, hour, duration_sec):
@@ -99,7 +94,7 @@ class VerticalProfile_Uniform(VerticalProfile):
         return super().__str__()+f" min={self.h_min/1000.0:.2f}, max height {self.h_max/1000.0:.2f} km"
 
     def plot(self,*args, **kwargs):
-        plt.plot(self.values,self.h/1000.0,'-+', label=super().__str__()+f" min={self.h_min/1000.0:.2f}, max height {self.h_max/1000.0:.2f} km", *args, **kwargs)
+        plt.plot(self.values,self.h/1000.0,'-+', label=super().__str__()+f" min={self.h_min/1000.0:.2f},\n max height {self.h_max/1000.0:.2f} km", *args, **kwargs)
         self._format_plot()
 
 class VerticalProfile_Suzuki(VerticalProfile):
@@ -129,7 +124,7 @@ class VerticalProfile_Suzuki(VerticalProfile):
 
     def plot(self,*args, **kwargs):
         plt.plot(self.values,self.h/1000.0,'-+', label=f"Suzuki K={self.k}, Max Height {self.H/1000.0:.2f} km", *args, **kwargs)
-        plt.hlines(self.h_max/1000.0,0,1, color='red', linestyle='--', label=f"Height of peak {self.h_max/1000.0:.2f} km")
+        plt.hlines(self.h_max/1000.0,-1,1, color='red', linestyle='--', label=f"Height of peak {self.h_max/1000.0:.2f} km")
         self._format_plot()
       
     def __str__(self):
@@ -206,9 +201,8 @@ class VerticalProfile_Umbrella(VerticalProfile):
         super().__init__(z_at_m,profile,year,month,day,hour,duration_sec,scale)
 
     def __str__(self):
-        return super().__str__()+f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, \
-            Max Emissions Height {self.emiss_height/1000.0:.2f} km"
+        return super().__str__()+f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, \nMax Emissions Height {self.emiss_height/1000.0:.2f} km"
 
     def plot(self,*args, **kwargs):
-        plt.plot(self.values,self.h/1000.0,'-+', label=f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, Max Emissions Height {self.emiss_height/1000.0:.2f} km", *args, **kwargs)
+        plt.plot(self.values,self.h/1000.0,'-+', label=f"Umbrella mass {self.percen_mass_umbrela:.2f}%, Base mass {self.base_umbrela:.2f}%, \nMax Emissions Height {self.emiss_height/1000.0:.2f} km", *args, **kwargs)
         self._format_plot()       

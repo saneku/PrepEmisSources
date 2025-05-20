@@ -36,10 +36,10 @@ class Emission_Ash(Emission):
         #sigma = np.log(1.8)
         #ash_mass_factors = np.array([0, 0, 0, 0, 0.004, 0.073, 0.326, 0.422, 0.158, 0.017])
 
-        
-        #Rescaled from GOCART fractions [0.001 0.015 0.095 0.45  0.439] into ash bins:
+        #                                 ASH1,  ASH2,  ASH3, ASH4, ASH5
+        #Rescaled from GOCART fractions [0.001, 0.015, 0.095, 0.45, 0.439] into ash bins:
         #see ./misc/remap_ash_fractions.py for details
-        #Ash1...6=0 Ash7=0.2109 Ash8=0.506 Ash9=0.2519 Ash10=0.0312
+        #Ash1...6=0 Ash7=0.2109 Ash8=0.5060 Ash9=0.2519 Ash10=0.03120
         self.ash_mass_factors = np.array([0,0,0,0,0,0,0.2109,0.5060,0.2519,0.03120])[::-1]
         
         print ("Ash mass redistribution (Ash1, Ash2, Ash3,...): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
