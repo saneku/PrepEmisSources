@@ -39,7 +39,7 @@ if __name__ == "__main__":
     ash_e = Emission_Ash(mass_mt=65.0, lat=LAT, lon=LON)
     #define ash mass fractions. 0.1 for all bins in this case
     ash_e.setMassFractions(np.full(10, 0.1))
-    ash_scenario = EmissionScenario_MixOfProfiles(ash_e)    
+    ash_scenario = EmissionScenario(ash_e)    
     #Add the ash profiles to the ash scenario
     for p, args in ash_profiles:
         ash_scenario.add_profile(p(*args))
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
     ]
     #Define the SO2 scenario
-    so2_scenario = EmissionScenario_MixOfProfiles(Emission_SO2(mass_mt=15.0,lat=LAT, lon=LON))
+    so2_scenario = EmissionScenario(Emission_SO2(mass_mt=15.0,lat=LAT, lon=LON))
     #Add the SO2 profiles to the so2 scenario
     for p, args in so2_profiles:
         so2_scenario.add_profile(p(*args))
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION])
     ]
     #Define the sulfate scenario
-    sulfate_scenario = EmissionScenario_MixOfProfiles(Emission_Sulfate(mass_mt=5.0,lat=LAT, lon=LON))    
+    sulfate_scenario = EmissionScenario(Emission_Sulfate(mass_mt=5.0,lat=LAT, lon=LON))    
     #Add the sulfate profiles to the sulfate scenario
     for p, args in sulfate_profiles:
         sulfate_scenario.add_profile(p(*args))
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         (VerticalProfile_Zero, [staggerred_h, YEAR, MONTH, DAY, 12, DURATION]),
     ]
     #Define the water vapor scenario
-    watervapor_scenario = EmissionScenario_MixOfProfiles(Emission_WaterVapor(mass_mt=50.0,lat=LAT, lon=LON))
+    watervapor_scenario = EmissionScenario(Emission_WaterVapor(mass_mt=50.0,lat=LAT, lon=LON))
     #Add the water vapor profiles to the water vapor scenario
     for p, args in watervapor_profiles:
         watervapor_scenario.add_profile(p(*args))

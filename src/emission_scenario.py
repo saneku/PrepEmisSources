@@ -292,12 +292,6 @@ class EmissionScenario():
         
         self.__is_divided_by_dh = True
         
-
-class EmissionScenario_MixOfProfiles(EmissionScenario):
-    def __init__(self, type_of_emission):
-        super().__init__(type_of_emission)    
-
-
 class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
         super().__init__(type_of_emission)
@@ -317,7 +311,6 @@ class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))
-
 
 class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
     def __init__(self, type_of_emission, json_filename):

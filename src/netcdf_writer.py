@@ -3,7 +3,6 @@ import numpy as np
 import os
 import xarray as xr
 import datetime
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 
