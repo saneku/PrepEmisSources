@@ -1,8 +1,4 @@
-from netCDF4 import Dataset
 import numpy as np
-import os
-import xarray as xr
-from scipy.interpolate import interp1d
 from pandas import *
 
 #grid with equal intervals on log-scale
@@ -13,7 +9,6 @@ nash=10
 
 dlo_sectm=np.zeros(nbin_o)
 dhi_sectm=np.zeros(nbin_o)
-xdia_um=np.zeros(nbin_o)
 dustfrc_ash10bin_ln=np.zeros((nash,nbin_o))
 
 xlo = np.log( dlo )
@@ -57,6 +52,7 @@ print (DataFrame(dustfrc_ash10bin_ln))
 
 '''
 8 MOZAIC BINS, diameter
+
 1     0.0391     0.0781
 2     0.0781     0.1562
 3     0.1562     0.3125

@@ -2,8 +2,8 @@ import numpy as np
 from pandas import DataFrame
 
 #Diametr (um)
-ra_gocart=np.array([ 0.2, 2. , 3.6, 6. , 12. ])
-rb_gocart=np.array([ 2. , 3.6, 6. , 12., 20. ])
+da_gocart=np.array([ 0.2, 2. , 3.6, 6. , 12. ])
+db_gocart=np.array([ 2. , 3.6, 6. , 12., 20. ])
 
 gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
 print (gocart_fractions)
@@ -31,8 +31,8 @@ dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
 '''
 
 for m in range(0,ndust):  # loop over dust size bins
-	dlogoc = ra_gocart[m]  # low diameter limit
-	dhigoc = rb_gocart[m]  # hi diameter limit
+	dlogoc = da_gocart[m]  # low diameter limit
+	dhigoc = db_gocart[m]  # hi diameter limit
 
 	for n in range(0,4):
 		dustfrc_goc10bin_ln[m,n]=max(0.0,min(np.log(dhi_sectm[n]),np.log(dhigoc)) - max(np.log(dlogoc),np.log(dlo_sectm[n])))/(np.log(dhigoc)-np.log(dlogoc))
