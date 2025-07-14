@@ -1,6 +1,9 @@
 import numpy as np
 from pandas import DataFrame
 
+# remaping fractors: 
+# from 5 bin GOCART to 10 ash bins
+
 #Diametr (um)
 da_gocart=np.array([ 0.2, 2. , 3.6, 6. , 12. ])
 db_gocart=np.array([ 2. , 3.6, 6. , 12., 20. ])
@@ -11,7 +14,7 @@ print (gocart_fractions)
 ndust=5
 nbin_o=10
 
-#Size (um) Diametr
+#Size (um) Diametr of 10 ash bins
 dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
 dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
 
