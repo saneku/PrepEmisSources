@@ -7,32 +7,34 @@ from pandas import DataFrame
 #Diametr (um)
 da_gocart=np.array([ 0.2, 2. , 3.6, 6. , 12. ])
 db_gocart=np.array([ 2. , 3.6, 6. , 12., 20. ])
-
-gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45,43.9])
-print (gocart_fractions)
-
 ndust=5
+
+print ("\n")
+print (str(ndust)+" GOCART BINS, diameter")
+for n in range(0,ndust):
+    print (n+1,"{:10.4f}".format(da_gocart[n]),"{:10.4f}".format(db_gocart[n]))
+
+print ("\n")
+
+
+
+
 nbin_o=10
 
 #Size (um) Diametr of 10 ash bins
 dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
 dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
 
+print ("\n")
+print (str(nbin_o)+" ASH BINS, diameter")
+for n in range(0,nbin_o):
+    print (n+1,"{:10.4f}".format(dlo_sectm[n]),"{:10.4f}".format(dhi_sectm[n]))
+
+print ("\n")
+
+
 
 dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
-'''
-3138   │ !1       1000    2000    -1 6.5  0   6.5     13  22  24  22  2.92    2.92    0  !
-3139   │ !2       500     1000    0  12  4   12  20  5   25  5   3.55    3.55    0   !
-3140   │ !3       250     500     1  18.75   10  18.75   27.5    4   20  4   11.82   11.82   0   !
-3141   │ !4       125     250     2  36.25   50  36.25   22.5    5   12  5   8.24    8.24    9   !
-3142   │ !5       62.5    125     3  20.5    34  20.5    7   24.5    9   24.5    7.9 7.9 22  !
-3143   │ !6       31.25   62.5    4  3   2   3   4   12  4.25    12  13.02   13.02   23  !
-3144   │ !7       15.625  31.25   5  1.5 0   1.5 3   11  3.25    11  16.28   16.28   21  !
-3145   │ !8       7.8125  15.625  6  1   0   1   2   8   1.25    8   15.04   15.04   18  !
-3146   │ !9       3.90625 7.8125  7  0.5 0   0.5 1   5   0.75    5   10.04   10.04   7   !
-3147   │ !10      0   3.90625 8  0   0   0   0   3.5 0.5 3.5 11.19   11.19   0   !
-'''
-
 for m in range(0,ndust):  # loop over dust size bins
 	dlogoc = da_gocart[m]  # low diameter limit
 	dhigoc = db_gocart[m]  # hi diameter limit
@@ -42,14 +44,18 @@ for m in range(0,ndust):  # loop over dust size bins
 
 #Flip dustfrc_goc10bin_ln because the smallest bin is Bin10, largset is Bin1
 dustfrc_goc10bin_ln = np.fliplr(dustfrc_goc10bin_ln)
-print (DataFrame(dustfrc_goc10bin_ln))
+#print (DataFrame(dustfrc_goc10bin_ln))
+print(DataFrame(dustfrc_goc10bin_ln, columns=[f"ASH{i+1}" for i in range(nbin_o)], index=[f"GOC{j+1}" for j in range(ndust)]))
 
+#Now remap the GOCART fractions to ASH fractions
+gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45, 43.9])
+print (gocart_fractions)
 
 for i in range(6,10)[::-1]:
-    print (f"\nAsh{i+1}=",end='')
+    print (f"\nASH{i+1}=",end='')
     for j in range(0,5):
         if (dustfrc_goc10bin_ln[j,i]!=0.0):
-            print (f"dust{j+1} * {dustfrc_goc10bin_ln[j,i]} + ",end='')
+            print (f"GOC{j+1} * {dustfrc_goc10bin_ln[j,i]} + ",end='')
 
 print ("\n")
 total_sum=0
@@ -59,10 +65,10 @@ for i in range(6,10)[::-1]:
         if (dustfrc_goc10bin_ln[j,i]!=0.0):
             sum+=gocart_fractions[j] * dustfrc_goc10bin_ln[j,i]
 
-    print (f"Ash{i+1}={sum}")
+    print (f"ASH{i+1}={sum}")
     total_sum+=sum
 
-print(total_sum)
+print(f"Total sum {total_sum}. And it SHOULD be equal to 1 as ASH range covers GOCART range.")
 
 #        ash1 ash2  3    4   ash5  6      ash7     ash8       ash9     ash10
 # dust1  0.0  0.0  0.0  0.0  0.0  0.0  0.000000  0.000000  0.000000  1.000000

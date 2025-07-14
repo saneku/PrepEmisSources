@@ -50,5 +50,5 @@ if not np.isclose(np.sum(xmas_sect), 1.0):
     raise ValueError(f"sum(xmas_sect)={np.sum(xmas_sect):0.2f} Should be =1.0")
 
 
-print (DataFrame(xmas_sect))
+print (DataFrame(xmas_sect,index=[f"MOS{j+1}" for j in range(nbin_o)]))
 print("Mass fractions of Sulfate in MOZAIC bins: " + (' '.join(str("{:.4f}".format(x)) for x in xmas_sect)))
