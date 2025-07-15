@@ -1,5 +1,6 @@
 import numpy as np
 from pandas import DataFrame
+from utils import plot_fraction_histogram
 
 # remaping fractors: 
 # from 5 bin GOCART to 8 MOSAIC bins
@@ -61,8 +62,14 @@ for i in range(0,nbin_o):
 gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45, 43.9])
 print (gocart_fractions)
 
+#plot the histogram
+fractions=gocart_fractions*100
+plot_fraction_histogram(da_gocart, db_gocart, fractions, title="Caluculated GOCART mass Fractions")
+
+
 print ("\n")
 total_sum=0
+remapped_mass_fractions=[]
 for i in range(0,nbin_o):
     sum=0
     for j in range(0,ndust):
@@ -71,5 +78,61 @@ for i in range(0,nbin_o):
 
     print (f"MOS{i+1}={sum}")
     total_sum+=sum
+    remapped_mass_fractions.append(sum*100)  # Convert to percentage
 
 print(f"Total sum {total_sum} might not be equal to 1 as 5th GOCART bin is out of the MOSAIC range.")
+
+# Now, we can plot the remapped to MOSAIC ash fractions
+plot_fraction_histogram(dlo_sectm, dhi_sectm, np.array(remapped_mass_fractions), title="Remappeed to MOSAIC grid ASH mass fractions")
+
+
+'''
+5 GOCART BINS, diameter
+1     0.2000     2.0000
+2     2.0000     3.6000
+3     3.6000     6.0000
+4     6.0000    12.0000
+5    12.0000    20.0000
+
+
+8 MOZAIC BINS, diameter
+1     0.0391     0.0781
+2     0.0781     0.1562
+3     0.1562     0.3125
+4     0.3125     0.6250
+5     0.6250     1.2500
+6     1.2500     2.5000
+7     2.5000     5.0000
+8     5.0000    10.0000
+
+
+      MOS1  MOS2     MOS3     MOS4     MOS5      MOS6      MOS7      MOS8
+GOC1   0.0   0.0  0.19382  0.30103  0.30103  0.204120  0.000000  0.000000
+GOC2   0.0   0.0  0.00000  0.00000  0.00000  0.379634  0.620366  0.000000
+GOC3   0.0   0.0  0.00000  0.00000  0.00000  0.000000  0.643085  0.356915
+GOC4   0.0   0.0  0.00000  0.00000  0.00000  0.000000  0.000000  0.736966
+GOC5   0.0   0.0  0.00000  0.00000  0.00000  0.000000  0.000000  0.000000
+
+
+
+MOS1 =
+MOS2 =
+MOS3 = GOC1 * 0.1938200260161129 +
+MOS4 = GOC1 * 0.3010299956639812 +
+MOS5 = GOC1 * 0.30102999566398125 +
+MOS6 = GOC1 * 0.20411998265592465 + GOC2 * 0.37963357224405403 +
+MOS7 = GOC2 * 0.620366427755946 + GOC3 * 0.6430845511432771 +
+MOS8 = GOC3 * 0.35691544885672283 + GOC4 * 0.7369655941662071 + [0.001 0.015 0.095 0.45  0.439]
+
+
+
+MOS1=0
+MOS2=0
+MOS3=0.00019382002601611289
+MOS4=0.0003010299956639812
+MOS5=0.00030102999566398124
+MOS6=0.005898623566316734
+MOS7=0.07039852877495051
+MOS8=0.3655414850161819
+Total sum 0.4426345173747932 might not be equal to 1 as 5th GOCART bin is out of the MOSAIC range.
+'''

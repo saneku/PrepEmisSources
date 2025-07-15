@@ -1,6 +1,6 @@
 import numpy as np
 from pandas import DataFrame
-
+from utils import plot_fraction_histogram
 # remaping fractors: 
 # from 5 bin GOCART to 10 ash bins
 
@@ -16,13 +16,10 @@ for n in range(0,ndust):
 
 print ("\n")
 
-
-
-
 nbin_o=10
 
 #Size (um) Diametr of 10 ash bins
-dlo_sectm=np.array([1e-5,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
+dlo_sectm=np.array([0.0391,3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000])
 dhi_sectm=np.array([3.90625,7.8125,15.625,31.25,62.5,125,250,500,1000,2000])
 
 print ("\n")
@@ -31,7 +28,6 @@ for n in range(0,nbin_o):
     print (n+1,"{:10.4f}".format(dlo_sectm[n]),"{:10.4f}".format(dhi_sectm[n]))
 
 print ("\n")
-
 
 
 dustfrc_goc10bin_ln=np.zeros((ndust,nbin_o))
@@ -85,3 +81,8 @@ Ash7=0.21214983973001478
 Ash1, Ash2, Ash3, Ash4, ... , Ash9, Ash10
 [0,0,0,0,0,0,0.2109,0.5060,0.2519,0.03120]
 '''
+
+
+#plot the histogram
+fractions=np.array([0,0,0,0,0,0,0.2109,0.5060,0.2519,0.03120]) * 100
+plot_fraction_histogram(dlo_sectm[::-1], dhi_sectm[::-1], fractions, title="RE-Caluculated GOCART to ASH mass Fractions")
