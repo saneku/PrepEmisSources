@@ -49,6 +49,9 @@ for m in range(0,nash):  # loop over ash size bins
 
 print ("\n")
 
+#Remove the long submicron tail
+#dustfrc_ash10bin_ln[:,0:5]=0.0  # set first 4 MOSAIC bins to zero, as they are out of the ash size range
+
 print(DataFrame(dustfrc_ash10bin_ln, columns=[f"MOS{i+1}" for i in range(nbin_o)], index=[f"ASH{j+1}" for j in range(nash)]))
 
 
