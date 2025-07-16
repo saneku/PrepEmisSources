@@ -67,7 +67,8 @@ class EmissionWriter():
 
 
 # interpolate profiles in time (to uniform time intervals) 
-# and height using the wrfinput vertical grid, ad divide by dh to convert from Mt to Mt/m
+# and height using the wrfinput vertical grid.
+# NO NEED to divide by dh as the emission scenario given in [Mt/sec]
 class EmissionWriter_NonUniformInTimeHeightProfiles(EmissionWriter):
 
     @EmissionWriter._postAmbula
@@ -77,8 +78,8 @@ class EmissionWriter_NonUniformInTimeHeightProfiles(EmissionWriter):
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
             scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
-            #divide by dh to convert from Mt to Mt/m
-            scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
+            #divide by dh to convert from [Mt/sec] to [Mt/m/sec]
+            #scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
 
             #scenario.plot(linestyle='-', color='blue', marker='+')
             

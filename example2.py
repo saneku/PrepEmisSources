@@ -2,9 +2,11 @@ from src import *
 import numpy as np
 
 # Example 2:
-# Emisson profiles of ash and SO2 are obtained by inversion (Ukhov et al. 2023). 
+# Emisson profiles of ash and SO2 [Mt/sec] are obtained by inversion (Ukhov et al. 2023). 
 # Water vapor emission is set to 100 Mt, with the same profile as SO2.
 # Inverted profiles are interpolated to 10 minute intervals.
+# Profiles [Mt/sec] are interpolated into the vertical grid from the provided wrfinput file
+# The profiles are normalized by the total mass.
 
 if __name__ == "__main__":
     # Location of the Pinatubo volcano
@@ -24,10 +26,7 @@ if __name__ == "__main__":
     
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
 
-    # Profiles are interpolated into the required vertical grid
-    # and divided by the height of the grid cell to convert from Mt to Mt/m
-    # The profiles are normalized by the total mass. Interval between profiles is 10 minutes.
-    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, 10)
+    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios, netcdf_handler, output_interval=10)
     
     emission_writer.plot_scenarios()
     # Plot the scenarios

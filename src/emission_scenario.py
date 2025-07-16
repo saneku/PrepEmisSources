@@ -184,7 +184,7 @@ class EmissionScenario():
     def plot(self,*args, **kwargs):
         
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
-        h = self.profiles[0].h
+        h = self.profiles[0].h/1000.0
         times = [profile.start_datetime for profile in self.profiles]
         
         # Shift times by half the interval for correct pcolormesh alignment
@@ -195,17 +195,26 @@ class EmissionScenario():
             times_shifted = times
             
         fig = plt.figure(figsize=(14,7))
-        plt.pcolormesh(times_shifted, h/1000.0, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
-        cs=plt.pcolormesh(times_shifted, h/1000.0, scenario_2d_array,cmap=self.__getColorMap())
+        plt.pcolormesh(times_shifted, h, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
+        cs=plt.pcolormesh(times_shifted, h, scenario_2d_array,cmap=self.__getColorMap())
         plt.colorbar(cs,label='Emissions')
 
         plt.ylim(0.0, 40)
         plt.ylabel('Altitude, $km$')
         plt.xlabel('Datetime')
+        # Add minutes to the x-axis ticks for better resolution
+        times_with_minutes = [dt.strftime('%H:%M') for dt in times_shifted]
+        plt.xticks(times_shifted, times_with_minutes, rotation=90, fontsize=4)
+
         plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
-       
+
+        # Set x-axis limits: lower - round down to nearest day, upper - round up to next day
+        min_time = times_shifted[0].replace(hour=0, minute=0, second=0, microsecond=0)
+        max_time = (times_shifted[-1] + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        plt.xlim(min_time, max_time)
+        #plt.tight_layout()
         plt.title(self)
         plt.show()
   
@@ -215,11 +224,11 @@ class EmissionScenario():
         
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
-                return s +  f'Units [Mt/m/s]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
+                return s +  f'Units [Mt/m/sec]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
             else:
-                return s + 'Units [Mt/m/s]'
+                return s + 'Units [Mt/m/sec]'
         else:
-            return s + 'Units [Mt/s]'
+            return s + 'Units [Mt/sec]'
 
     def interpolate_time(self, interval_minutes=60):
         dt = self.getStartDateTime()
@@ -278,7 +287,7 @@ class EmissionScenario():
         for profile in self.profiles:
             #profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
             profile.values = np.maximum(interp1d(profile.h, profile.values, kind='linear', bounds_error=False, fill_value=0)(new_height), 0)
-
+            #TODO: move interpolation to VerticalProfile class, by adding a method to it
             profile.h=new_height
         
         self.__is_height_adjusted = True
@@ -289,6 +298,8 @@ class EmissionScenario():
         
         for profile in self.profiles:
             profile.values = profile.values / dh
+            profile.is_divided_by_dh = True
+            profile.dh = dh
         
         self.__is_divided_by_dh = True
         
@@ -307,7 +318,7 @@ class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
 
         with open(filename,'rb') as infile:
             _,_,emission_scenario,years,months,days,hours,duration_sec,_ = pickle.load(infile,encoding='latin1')
-        #emission_scenario in [Mt]
+        #emission_scenario in [Mt/sec]
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],duration_sec[i]))

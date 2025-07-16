@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 
 class WRFNetCDFWriter:
-    def __init__(self, source_dir='./', wrf_input_file='./wrfinput_d01'):
+    def __init__(self, source_dir='./', wrf_input_file='wrfinput_d01'):
         self.source_dir = source_dir
         self.orgn_wrf_input_file = wrf_input_file
         
@@ -21,21 +21,23 @@ class WRFNetCDFWriter:
         
         #Read data from wrfinput data
         print (f'Open {self.source_dir}{self.orgn_wrf_input_file}')
-        with nc.Dataset(f'{self.source_dir}{self.orgn_wrf_input_file}','r') as wrfinput:
-            self.xlon=wrfinput.variables['XLONG'][0,:]
-            self.xlat=wrfinput.variables['XLAT'][0,:]
-            MAPFAC_MX=wrfinput.variables['MAPFAC_MX'][0,:]
-            MAPFAC_MY=wrfinput.variables['MAPFAC_MY'][0,:]
+        try:
+            with nc.Dataset(f'{self.source_dir}{self.orgn_wrf_input_file}', 'r') as wrfinput:
+                self.xlon=wrfinput.variables['XLONG'][0,:]
+                self.xlat=wrfinput.variables['XLAT'][0,:]
+                MAPFAC_MX=wrfinput.variables['MAPFAC_MX'][0,:]
+                MAPFAC_MY=wrfinput.variables['MAPFAC_MY'][0,:]
 
-            dy = wrfinput.getncattr('DY')
-            dx = wrfinput.getncattr('DX')
-            self.area = (dx/MAPFAC_MX)*(dy/MAPFAC_MY)       #m2
-            self.__h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
-            self.__dh = np.diff(self.__h,axis=0)                #dh in m
+                dy = wrfinput.getncattr('DY')
+                dx = wrfinput.getncattr('DX')
+                self.area = (dx/MAPFAC_MX)*(dy/MAPFAC_MY)       #m2
+                self.__h = (wrfinput.variables['PH'][0,:] + wrfinput.variables['PHB'][0,:]) / 9.81
+                self.__dh = np.diff(self.__h,axis=0)                #dh in m
 
-            self.__h = self.__h[:-1]
-            self.__h = self.__h + self.__dh * 0.5               #height in m
-            
+                self.__h = self.__h[:-1]
+                self.__h = self.__h + self.__dh * 0.5               #height of cell centers, in meters
+        except:
+            raise FileNotFoundError(f"WRF input file {self.source_dir}{self.orgn_wrf_input_file} not found or cannot be opened.")  
             #self.h and self.dh are 3d variable with dimensions (bottom_top, south_north, west_east)
 
     def __str__(self):
@@ -238,12 +240,18 @@ class WRFNetCDFWriter:
             duration_sec.append(duration_sec[-1]) #add the last one, assuming all delta's are the same
             
             total = {key: [] for key in self.__emissions}
-            
+            #total_fractions={}
+            #index  =1
             for time_idx, curr_time in enumerate(times):
                 #print(time_idx, curr_time)
                 for key, data in self.__emissions.items():
                     if key == "ash":
                         total_emission = np.sum(np.sum(wrf_volc_file.variables[f"{data['var']}{i}"][time_idx, :] * self.area) for i in range(1, 11))
+                        #key_name = f"{data['var']}{index}"
+                        #if key_name not in total_fractions:
+                        #    total_fractions[key_name] = 0.0
+                        #total_fractions[key_name] += np.sum(wrf_volc_file.variables[key_name][time_idx, :] * self.area)
+                        #index += 1
                     else:
                         total_emission = np.sum(wrf_volc_file.variables[data["var"]][time_idx, :] * self.area)
                     #for plotting
@@ -251,15 +259,20 @@ class WRFNetCDFWriter:
 
             times.append(times[-1] + datetime.timedelta(seconds=int(duration_sec[-1])))
         
+        fig = plt.figure(figsize=(12,6))
         plt.title("Accumulated mass")
         print("Material Total mass")
         for key, data in total.items():
             plt.plot(times, [0]+list(np.cumsum(data)),color=self.__emissions[key]['color'], label=f"${key}$ {np.cumsum(data)[-1]:.2f} Mt",marker='o',markersize=2)
             print(f"{key}\t{np.cumsum(data)[-1]:.2f} Mt")
+        #print("--------------------------")    
+        #for key, data in total_fractions.items():
+        #    print(f"{key}\t{(data/sum(total_fractions.values())):.3f}")            
         print("--------------------------")
         plt.ylabel('Mass, $Mt$')
         plt.xlabel('Time, UTC')
         plt.legend(loc="best")
+        plt.tight_layout()
         plt.grid(True, alpha=0.3)
         plt.ylim([0, 80])
         plt.gca().get_xaxis().set_major_formatter(DateFormatter('%m-%d %H:%M'))

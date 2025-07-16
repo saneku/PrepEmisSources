@@ -7,12 +7,14 @@ from scipy.integrate import quad
 class VerticalProfile():
     def __init__(self, staggerred_h,values,year,month,day,hour,duration_sec,scale=1):
         self.h = staggerred_h
+        self.dh = np.array([])
         self.values = values * scale
         self.year = year
         self.month = month
         self.day = day
         self.hour = hour
         self.duration_sec = duration_sec
+        self.is_divided_by_dh = False
         
         self.start_datetime = datetime(int(self.year),int(self.month), int(self.day), 
                                 int(self.hour),int((self.hour - int(self.hour))*60.0))
@@ -30,7 +32,10 @@ class VerticalProfile():
         return self.__class__.__name__
        
     def getProfileEmittedMass(self):
-        return np.sum(self.values * self.duration_sec)
+        if self.is_divided_by_dh == False:
+            return np.sum(self.values * self.duration_sec)
+        else:
+            return np.sum(self.values * self.dh * self.duration_sec)
     
     def setDatetime(self,d):
         self.start_datetime=d.to_pydatetime()
