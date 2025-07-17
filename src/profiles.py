@@ -1,6 +1,7 @@
 import numpy as np
 import calendar
 from datetime import datetime
+from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
@@ -59,6 +60,10 @@ class VerticalProfile():
         
     def normalize_by_one(self,arr):
         return arr / np.sum(arr)
+    
+    def interpoloate_height(self, new_height):        
+        self.values = np.maximum(interp1d(self.h, self.values, kind='linear', bounds_error=False, fill_value=0)(new_height), 0)
+        self.h = new_height
 
 class VerticalProfile_Zero(VerticalProfile):
     def __init__(self, z_at_m, year, month, day, hour, duration_sec):

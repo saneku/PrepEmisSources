@@ -2,7 +2,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import json
-from scipy.interpolate import interp1d
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -317,14 +316,17 @@ class EmissionScenario():
         #if (self.__is_time_adjusted == False):    
         #    raise ValueError('Time must be adjusted before adjusting height')
         
+        if not isinstance(new_height, np.ndarray):
+            raise TypeError("new_height must be a numpy array")
+        
+        if len(new_height) < 2:
+            raise ValueError("new_height must contain at least two elements")
+
         if(np.all(new_height[1:] > new_height[:-1])==False):
             raise ValueError('new_height must be monotonically increasing')
         
         for profile in self.profiles:
-            #profile.values=np.maximum(interp1d(profile.h, profile.values, kind='linear', fill_value="extrapolate")(new_height), 0)
-            profile.values = np.maximum(interp1d(profile.h, profile.values, kind='linear', bounds_error=False, fill_value=0)(new_height), 0)
-            #TODO: move interpolation to VerticalProfile class, by adding a method to it
-            profile.h=new_height
+            profile.interpoloate_height(new_height)
         
         self.__is_height_adjusted = True
     
