@@ -197,11 +197,18 @@ class EmissionScenario():
         fig = plt.figure(figsize=(14,7))
         plt.pcolormesh(times_shifted, h, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
         cs=plt.pcolormesh(times_shifted, h, scenario_2d_array,cmap=self.__getColorMap())
-        plt.colorbar(cs,label='Emissions')
+        
+        # Store colorbar range if not already set
+        if not hasattr(self, "_colorbar_range"):
+            self._colorbar_range = (np.nanmin(scenario_2d_array), np.nanmax(scenario_2d_array))
+        # Apply stored colorbar range
+        cs.set_clim(*self._colorbar_range)
+        plt.colorbar(cs, label='Emissions')
 
         plt.ylim(0.0, 40)
         plt.ylabel('Altitude, $km$')
-        plt.xlabel('Datetime')
+        plt.xlabel('Time')
+        
         # Add minutes to the x-axis ticks for better resolution
         times_with_minutes = [dt.strftime('%H:%M') for dt in times_shifted]
         plt.xticks(times_shifted, times_with_minutes, rotation=90, fontsize=4)
