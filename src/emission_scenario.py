@@ -230,18 +230,36 @@ class EmissionScenario():
         else:
             return s + 'Units [Mt/sec]'
 
+    def __resample_emissions(self,emissions, durations, regular_dt):
+        t_end = np.sum(durations)
+        original_times = np.concatenate(([0], np.cumsum(durations)))
+
+        cumulative_mass = np.zeros_like(original_times, dtype=float)
+        for i in range(len(emissions)):
+            cumulative_mass[i+1] = cumulative_mass[i] + emissions[i] * durations[i]
+
+        new_times = np.arange(0, t_end + regular_dt, regular_dt)
+        new_cumulative_mass = np.interp(new_times, original_times, cumulative_mass)
+        new_emissions = np.diff(new_cumulative_mass) / regular_dt
+
+        #check the mass balance
+        if np.abs(np.sum(new_emissions) * regular_dt - np.sum(emissions * durations)) > 1e-6:
+            raise ValueError("Mass balance error: the total mass before and after resampling does not match.")
+        #sum(new_emissions*regular_dt)
+        #sum(durations*emissions[:-1])
+        
+        #return new_times[:-1], new_emissions, original_times
+        return new_emissions
+
     def interpolate_time(self, interval_minutes=60):
-        dt = self.getStartDateTime()
+        StartDateTime = self.getStartDateTime()
         # Round minutes to nearest 10th
-        new_minute = round(dt.minute / 10.0) * 10.0
-        # Adjust datetime accordingly
-        StartDateTime_rounded = dt.replace(minute=0, second=0) + timedelta(minutes=new_minute)
+        start_minute = round(StartDateTime.minute / 10.0) * 10.0
+        StartDateTime_rounded = StartDateTime.replace(minute=0, second=0) + timedelta(minutes=start_minute)
 
         new_datetime_list = pd.date_range(start=StartDateTime_rounded, end=self.getEndDateTime(), 
                            freq=pd.Timedelta(days=0, hours=0, minutes=interval_minutes))
 
-        old_datetime_list = [profile.start_datetime for profile in self.profiles]
-        
         #Generate new dates based on the new hours, keep h the same
         levels_h = self.profiles[0].h     
         new_years = new_datetime_list.year.tolist()
@@ -252,14 +270,25 @@ class EmissionScenario():
         new_duration_hours = np.diff(new_datetime_list)/ np.timedelta64(1, 'h')
         new_duration_hours = np.append(new_duration_hours,0)
 
-        # Interpolate the emission scenario into the new time points
         temp_scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
-        
         temp_interp_solution_emission_scenario = np.zeros([temp_scenario_2d_array.shape[0],len(new_datetime_list)])
-        for j in range(temp_scenario_2d_array.shape[0]):
-            df = pd.DataFrame({"datetime": old_datetime_list, "value": temp_scenario_2d_array[j, :]}).set_index("datetime")
-            new_values = df.reindex(df.index.union(new_datetime_list), method='bfill').interpolate(method="time").loc[new_datetime_list]["value"].tolist()
-            temp_interp_solution_emission_scenario[j,:] = np.maximum(new_values,0)
+        
+        old_durations_seconds = np.array([profile.duration_sec for profile in self.profiles], dtype=int) 
+
+        # Resample
+        for i in range(temp_interp_solution_emission_scenario.shape[0]):
+            emissions = temp_scenario_2d_array[i, :]
+            if (sum(emissions) == 0):
+                continue
+            
+            new_emissions = self.__resample_emissions(emissions, old_durations_seconds, interval_minutes * 60)
+            
+            # Pad new_emissions with zeros on the right to match the shape of the new emission scenario
+            if new_emissions.shape[0] < temp_interp_solution_emission_scenario[i, :].shape[0]:
+                pad_width = temp_interp_solution_emission_scenario[i, :].shape[0] - new_emissions.shape[0]
+                new_emissions = np.pad(new_emissions, (0, pad_width), mode='constant')
+            
+            temp_interp_solution_emission_scenario[i, :] = np.maximum(new_emissions, 0)
         
         # Clear existing profiles
         self._clear_profiles() 
