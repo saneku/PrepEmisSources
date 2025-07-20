@@ -66,6 +66,9 @@ print ("\n")
 
 #these ash fractions are computed from given ash size distribution ASH1...ASH10
 ash_mass_fractions = 0.01 * np.array([0.0, 0.0, 0.0, 0.0, 0.5, 7.3, 32.6, 42.2, 15.8, 1.7])
+
+#these ash fractions are chosen to match the GOCART fractions
+ash_mass_fractions = 0.01 * np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 14.0, 65.0, 21.0, 0.0])
 print (ash_mass_fractions)
 
 #plot the histogram
