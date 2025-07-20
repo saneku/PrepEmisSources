@@ -60,6 +60,7 @@ for i in range(0,nbin_o):
 
 
 gocart_fractions = 0.01 * np.array([0.1, 1.5, 9.5, 45, 43.9])
+print ("\n")
 print (gocart_fractions)
 
 #plot the histogram
@@ -83,7 +84,7 @@ for i in range(0,nbin_o):
 print(f"Total sum {total_sum} might not be equal to 1 as 5th GOCART bin is out of the MOSAIC range.")
 
 # Now, we can plot the remapped to MOSAIC ash fractions
-plot_fraction_histogram(dlo_sectm, dhi_sectm, np.array(remapped_mass_fractions), title="Remappeed to MOSAIC grid ASH mass fractions")
+plot_fraction_histogram(dlo_sectm, dhi_sectm, np.array(remapped_mass_fractions), title="Remappeed to MOSAIC grid GOCART mass fractions")
 
 
 '''
