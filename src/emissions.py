@@ -42,7 +42,10 @@ class Emission_Ash(Emission):
         #Ash1...6=0 Ash7=0.2109 Ash8=0.5060 Ash9=0.2519 Ash10=0.03120
         #self.ash_mass_factors = np.array([0,0,0,0,0,0,0.2109,0.5060,0.2519,0.03120])[::-1]
         
-        print ("Ash mass redistribution (ASH1, ASH2, ASH3, ..., ASH10): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
+        #these ash fractions are chosen to match the GOCART fractions
+        #self.ash_mass_factors =  0.01 * np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 14.0, 65.0, 21.0, 0.0])[::-1]
+
+        #print ("Ash mass redistribution (ASH1, ASH2, ASH3, ..., ASH10): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
         
         super().__init__(mass_mt,lat,lon)
         
@@ -91,8 +94,7 @@ class Emission_Ash(Emission):
             raise ValueError(f"sum(xmas_sect)={np.sum(ash_mass_factors):0.2f} Should be =1.0")
 
         self.ash_mass_factors = ash_mass_factors
-        print ("Ash mass redistribution (Ash1, Ash2, Ash3,...): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
-
+        print ("Ash mass redistribution (ASH1, ASH2, ASH3, ..., ASH10): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
 
 class Emission_SO2(Emission):
     def __str__(self):

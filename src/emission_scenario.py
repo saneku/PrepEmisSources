@@ -201,7 +201,7 @@ class EmissionScenario():
         if not hasattr(self, "_colorbar_range"):
             self._colorbar_range = (np.nanmin(scenario_2d_array), np.nanmax(scenario_2d_array))
         # Apply stored colorbar range
-        cs.set_clim(*self._colorbar_range)
+        #cs.set_clim(*self._colorbar_range)
         plt.colorbar(cs, label='Emissions')
 
         plt.ylim(0.0, 40)
