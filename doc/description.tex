@@ -19,7 +19,7 @@
 \maketitle
 
 \section{Introduction}
-PrepEmisSources is a Python-based framework for preparing and visualizing atmospheric emission scenarios, particularly applicable to volcanic eruptions or similar emission events. It provides an infrastructure for defining vertical emission profiles with temporal and spatial resolution suitable for input into models like WRF-Chem (starting from v.4.7.2). The framework employs a fully object-oriented design, leveraging inheritance and modular components to support multiple emission scenario types (e.g., continuous, pulsed, or time-varying eruptions). This modularity facilitates extensibility and reuse, enabling users to define custom scenario classes or integrate with external data sources from different studies [1,2]. PrepEmisSources supports visualization utilities for inspecting emission profiles/scenarios and diagnosing inputs before model execution.
+PrepEmisSources is a Python-based framework for preparing and visualizing atmospheric emission scenarios, particularly applicable to volcanic eruptions or similar emission events. It provides an infrastructure for defining vertical emission profiles with temporal and spatial resolution suitable for input into models like WRF-Chem (starting from v4.8). The framework employs a fully object-oriented design, leveraging inheritance and modular components to support multiple emission scenario types (e.g., continuous, pulsed, or time-varying eruptions). This modularity facilitates extensibility and reuse, enabling users to define custom scenario classes or integrate with external data sources from different studies [1,2]. PrepEmisSources supports visualization utilities for inspecting emission profiles/scenarios and diagnosing inputs before model execution.
 
 \section{Dependencies}
 
@@ -34,11 +34,11 @@ The path to the WRF-Chem file with initial conditions ('wrfinput\_d01', for exam
     \&chem \\
         chem\_opt               = 402   \\
         emiss\_opt\_vol          = 3    \\ \\
-These settings mean that the prepared emission file 'wrfchemv\_d01.1991-06-15\_02:00:00' will be read by WRF-Chem 85 times, starting from the moment when the model time passes '1991-06-15 01:40:00'. The interval between readings of the emission file is 10 minutes. During the run, the WRF-Chem will read the data from the emission file at 10-minute intervals. Within each interval, the corresponding vertical distribution of emissions will be used.
+These settings mean that the prepared emission file 'wrfchemv\_d01.1991-06-15\_01:40:00' will be read by WRF-Chem 85 times, starting from the moment when the model time passes '1991-06-15 01:40:00'. During the run, the WRF-Chem will read the data from the emission file at 10-minute intervals. Within each interval, the corresponding vertical distribution of emissions will be used.
 
 \section{How to cite}
 If you used this utility in your work, please do not forget to cite it as follows: 
-Ukhov et al., Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.7.2
+Ukhov et al., Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.8
 
 \clearpage
 \section{Class structure}
