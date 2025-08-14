@@ -21,4 +21,4 @@ During the run, the WRF-Chem model will read the data from the emission file at 
 
 ## How to cite:
 If you used this utility in your work, please do not forget to cite it as follows:
-Ukhov et. al, Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.8.
+Ukhov et al., Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.8.
