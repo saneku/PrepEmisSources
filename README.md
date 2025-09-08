@@ -1,5 +1,3 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16856541.svg)](https://doi.org/10.5281/zenodo.16856541)
-
 # PrepEmisSources
 This preprocessor was developed to facilitate the preparation of volcanic emissions (chem_opt=402, emis_opt_vol=3) for the WRF-Chem v4.8 model.
 
@@ -24,3 +22,5 @@ During the run, the WRF-Chem model will read the data from the emission file at 
 ## How to cite:
 If you used this utility in your work, please do not forget to cite it as follows:
 Ukhov et al., Enhancing Volcanic Eruption Simulations with the WRF-Chem v4.8.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16856541.svg)](https://doi.org/10.5281/zenodo.16856541)
