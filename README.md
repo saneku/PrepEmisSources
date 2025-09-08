@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/16856541.svg)](https://zenodo.org/badge/latestdoi/16856541)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16856541.svg)](https://doi.org/10.5281/zenodo.16856541)
 
 # PrepEmisSources
 This preprocessor was developed to facilitate the preparation of volcanic emissions (chem_opt=402, emis_opt_vol=3) for the WRF-Chem v4.8 model.
