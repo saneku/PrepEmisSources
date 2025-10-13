@@ -18,6 +18,28 @@ class EmissionWriter():
             raise TypeError("netcdf_handler must be an instance of WRFNetCDFWriter")
 
         self._netcdf_handler = netcdf_handler
+
+    def _check_vertical_compat(self, scenario, column_heights):
+        """Raise a clear error if any profile exceeds the model vertical domain top.
+        Interpolation with out-of-bounds heights would silently zero values; fail-fast here.
+        """
+        try:
+            src_top = max(float(p.h.max()) for p in scenario.profiles)
+        except ValueError:
+            # no profiles
+            return
+        dom_top = float(np.max(column_heights)) if len(column_heights) > 0 else 0.0
+        if src_top > dom_top:
+            mat = scenario.type_of_emission.get_name_of_material()
+            lat = scenario.type_of_emission.lat
+            lon = scenario.type_of_emission.lon
+            raise ValueError(
+                (
+                    f"{scenario.__class__.__name__}: profile top {src_top:.1f} m exceeds model domain top {dom_top:.1f} m "
+                    f"at lat={lat:.4f}, lon={lon:.4f} for material '{mat}'. "
+                    f"Increase WRF vertical extent or reduce the emission profile height."
+                )
+            )
     
     def _getScenarios(self):
         return self.__scenarios
@@ -77,7 +99,9 @@ class EmissionWriter_NonUniformInTimeHeightProfiles(EmissionWriter):
             scenario.interpolate_time(self._output_interval) # minutes time intervals to interpolate to
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
-            scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
+            col_h = self._netcdf_handler.getColumn_H(x,y)
+            self._check_vertical_compat(scenario, col_h)
+            scenario.interpolate_height(col_h)
             #divide by dh to convert from [Mt/sec] to [Mt/m/sec]
             #scenario.divide_by_dh(self._netcdf_handler.getColumn_dH(x,y))
 
@@ -95,7 +119,9 @@ class EmissionWriter_NonUniformInHeightProfiles(EmissionWriter):
         for scenario in self._getScenarios():
             y,x = self._netcdf_handler.findClosestGridCell(scenario.type_of_emission.lat,scenario.type_of_emission.lon)
 
-            scenario.interpolate_height(self._netcdf_handler.getColumn_H(x,y))
+            col_h = self._netcdf_handler.getColumn_H(x,y)
+            self._check_vertical_compat(scenario, col_h)
+            scenario.interpolate_height(col_h)
 
             #scenario.plot(linestyle='-', color='blue', marker='+')
             
