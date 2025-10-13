@@ -5,9 +5,9 @@ from src import *
 import numpy as np
 
 class EmissionWriter():
-    def __init__(self, scenarios, netcdf_handler,output_interval=60):
+    def __init__(self, scenarios, netcdf_handler,output_interval_m=60):
         
-        self._output_interval = output_interval  #minutes        
+        self._output_interval = output_interval_m  #minutes        
         
         for i,scenario in enumerate(scenarios):
             if not isinstance(scenario, EmissionScenario):

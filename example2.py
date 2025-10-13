@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 #Emission_Sulfate(mass_mt=0.1,lat=15,lon=165),
                 ]
     
-    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios_with_disabled_rad_feedback, netcdf_handler, output_interval=10)
+    emission_writer = EmissionWriter_NonUniformInTimeHeightProfiles(scenarios_with_enabled_rad_feedback, netcdf_handler, output_interval_m=10)
     
     emission_writer.plot_scenarios()
     # Plot the scenarios

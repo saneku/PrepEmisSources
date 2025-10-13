@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     #Passing all scenarios to the EmissionWriter. Interval between profiles is 120 minutes.
     emission_writer = EmissionWriter_UniformInTimeProfiles([ash_scenario,so2_scenario,sulfate_scenario,watervapor_scenario], \
-                                                           netcdf_handler, 120)
+                                                           netcdf_handler, output_interval_m=120)
     emission_writer.write()
 
     #Plotting the scenarios
