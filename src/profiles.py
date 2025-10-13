@@ -29,6 +29,15 @@ class VerticalProfile():
         beg_jul = int(beg_jul)
         self.erup_beg = beg_jul * 1000. + self.hour
     
+    @staticmethod
+    def _ensure_within_domain_top(z_at_m, value, param_name, profile_name):
+        domain_top = float(np.max(z_at_m)) if len(z_at_m) > 0 else 0.0
+        if value > domain_top:
+            raise ValueError(
+                f"{profile_name} profile {param_name}={value:.1f} m exceeds vertical domain top={domain_top:.1f} m. "
+                f"Reduce {param_name} or use a wrfinput with higher model top."
+            )
+    
     def __str__(self):
         return self.__class__.__name__
        
@@ -79,6 +88,7 @@ class VerticalProfile_Uniform(VerticalProfile):
     
         self.h_min = h_min
         self.h_max = h_max
+        VerticalProfile._ensure_within_domain_top(z_at_m, self.h_max, "h_max", "Uniform")
         
         kts=0
         kte=len(z_at_m)
@@ -115,6 +125,7 @@ class VerticalProfile_Suzuki(VerticalProfile):
         self.H = H   #top height of the cloud
         self.k = k
         self.h_max = H * (k-1)/k
+        VerticalProfile._ensure_within_domain_top(z_at_m, self.H, "H", "Suzuki")
         
         kte=len(z_at_m)
         profile = np.zeros(kte)
@@ -167,6 +178,8 @@ class VerticalProfile_Umbrella(VerticalProfile):
         
         if(self.emiss_height<vent_h):
             raise ValueError('emiss_height<vent_h in Umbrella profile')
+
+        VerticalProfile._ensure_within_domain_top(z_at_m, self.emiss_height, "emiss_height", "Umbrella")
 
         #===========================================
         kts=0
