@@ -181,21 +181,37 @@ class EmissionScenario():
         return cm
   
     def plot(self,*args, **kwargs):
-        
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
-        h = self.profiles[0].h/1000.0
+        h_centers = self.profiles[0].h / 1000.0
         times = [profile.start_datetime for profile in self.profiles]
-        
-        # Shift times by half the interval for correct pcolormesh alignment
-        if len(times) > 1:
-            dt = (times[1] - times[0]) / 2
-            times_shifted = [t + dt for t in times]
+        durations_sec = [int(getattr(profile, 'duration_sec', 0)) for profile in self.profiles]
+
+        # If the last interval has zero duration (common sentinel), drop it from plot
+        if len(durations_sec) > 0 and durations_sec[-1] == 0:
+            scenario_2d_array = scenario_2d_array[:, :-1]
+            times = times[:-1]
+            durations_sec = durations_sec[:-1]
+
+        # Build time edges from start times and durations so each column spans its interval
+        time_edges = [times[0]]
+        for i in range(len(times)):
+            time_edges.append(times[i] + timedelta(seconds=durations_sec[i]))
+
+        # Build vertical edges from level centers
+        if len(h_centers) >= 2:
+            dh = np.diff(h_centers)
+            y_edges = np.empty(len(h_centers) + 1, dtype=h_centers.dtype)
+            y_edges[1:-1] = h_centers[:-1] + 0.5 * dh
+            y_edges[0] = h_centers[0] - 0.5 * (h_centers[1] - h_centers[0])
+            y_edges[-1] = h_centers[-1] + 0.5 * (h_centers[-1] - h_centers[-2])
+            y_edges[0] = max(0.0, y_edges[0])
         else:
-            times_shifted = times
-            
-        fig = plt.figure(figsize=(14,7))
-        plt.pcolormesh(times_shifted, h, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
-        cs=plt.pcolormesh(times_shifted, h, scenario_2d_array,cmap=self.__getColorMap())
+            # Single level fallback
+            y_edges = np.array([max(0.0, h_centers[0] - 0.5), h_centers[0] + 0.5])
+
+        fig = plt.figure(figsize=(14, 7))
+        plt.pcolormesh(time_edges, y_edges, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
+        cs = plt.pcolormesh(time_edges, y_edges, scenario_2d_array, cmap=self.__getColorMap())
         
         # Store colorbar range if not already set
         if not hasattr(self, "_colorbar_range"):
@@ -208,17 +224,17 @@ class EmissionScenario():
         plt.ylabel('Altitude, $km$')
         plt.xlabel('Time')
         
-        # Add minutes to the x-axis ticks for better resolution
-        times_with_minutes = [dt.strftime('%H:%M') for dt in times_shifted]
-        plt.xticks(times_shifted, times_with_minutes, rotation=90, fontsize=4)
+        # Place ticks on interval edges for clarity
+        times_with_minutes = [dt.strftime('%H:%M') for dt in time_edges]
+        plt.xticks(time_edges, times_with_minutes, rotation=90, fontsize=6)
 
         plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
 
         # Set x-axis limits: lower - round down to nearest day, upper - round up to next day
-        min_time = times_shifted[0].replace(hour=0, minute=0, second=0, microsecond=0)
-        max_time = (times_shifted[-1] + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        min_time = time_edges[0].replace(hour=0, minute=0, second=0, microsecond=0)
+        max_time = (time_edges[-1] + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
         plt.xlim(min_time, max_time)
         #plt.tight_layout()
         plt.title(self)
