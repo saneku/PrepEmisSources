@@ -1,5 +1,5 @@
 # PrepEmisSources
-This preprocessor was developed to facilitate the preparation of volcanic emissions (chem_opt=402, emis_opt_vol=3) for the WRF-Chem v4.8 model.
+This preprocessor was developed to facilitate the preparation of volcanic emissions (chem_opt=402, emiss_opt_vol=3) for the WRF-Chem v4.8 model.
 
 ## Dependencies:
 scipy, netCDF4, xarray, matplotlib, pandas
