@@ -71,8 +71,8 @@ class WRFNetCDFWriter:
         #add variables to wrfchemv file
         with nc.Dataset(f'{self.source_dir}{self.dst_file}','r+') as nc_file:
             self.__add4dVar(nc_file,"E_START","START TIME OF ERUPTION","?")
-            self.__add4dVar(nc_file,"E_VSO2","Volcanic Emissions, SO2","mol/m2/h")
-            self.__add4dVar(nc_file,"E_VSULF","Volcanic Emissions, SULF","mol/m2/h")
+            self.__add4dVar(nc_file,"E_VSO2","Volcanic Emissions, SO2","ug/m2/min")
+            self.__add4dVar(nc_file,"E_VSULF","Volcanic Emissions, SULF","ug/m2/min")
             self.__add4dVar(nc_file,"E_QV","Volcanic Emissions, QV","kg/m2/s")
 
             self.__add2dVar(nc_file,"AREA","cell area","m^2")
