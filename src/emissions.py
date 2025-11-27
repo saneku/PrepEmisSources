@@ -25,6 +25,7 @@ class Emission_Ash(Emission):
     def __init__(self, mass_mt, lat, lon, bin_n=10, mean_r=2.4, stddev=1.8):
         self.radii = mean_r
         self.stddev = stddev
+        self._mass_fractions_custom = False
         
         if bin_n not in [4,10]:
             ValueError("Number of ash bins must be 4 or 10")
@@ -79,7 +80,11 @@ class Emission_Ash(Emission):
         return xmas_sect
 
     def __str__(self):
-        return f'Ash {super().__str__()}.\n Mean_r={self.radii:.2f} stddev={self.stddev:.2f}.\n Ash mass fractions={[f"{x:.3f}" for x in self.ash_mass_factors[::-1]]}'
+        parts = [f'Ash {super().__str__()}']
+        if not self._mass_fractions_custom:
+            parts.append(f'Mean_r={self.radii:.2f} stddev={self.stddev:.2f}')
+        parts.append(f'Ash mass fractions={[f"{x:.3f}" for x in self.ash_mass_factors[::-1]]}')
+        return ".\n ".join(parts)
     
     def get_name_of_material(self):
         return 'ash'
@@ -94,6 +99,7 @@ class Emission_Ash(Emission):
             raise ValueError(f"sum(xmas_sect)={np.sum(ash_mass_factors):0.2f} Should be =1.0")
 
         self.ash_mass_factors = ash_mass_factors
+        self._mass_fractions_custom = True
         print ("Ash mass redistribution (ASH1, ASH2, ASH3, ..., ASH10): "+(' '.join(str("{:.3f}".format(x)) for x in self.ash_mass_factors[::-1])))
 
 class Emission_SO2(Emission):
