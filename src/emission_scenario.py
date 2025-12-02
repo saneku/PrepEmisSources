@@ -59,6 +59,55 @@ class EmissionScenario():
     #returns end time of eruption.
     def getEndDateTime(self):
         return self.profiles[-1].start_datetime + timedelta(seconds=int(self.profiles[-1].duration_sec))
+
+    def get_emitted_mass_within(self, time_limit):
+        """
+        Estimate emitted mass (Mt) from start until a cutoff.
+        time_limit can be hours (int/float), a timedelta, or an absolute datetime.
+        Returns a formatted string with units (e.g., "0.300 Mt").
+        """
+        if len(self.profiles) == 0:
+            return "0.000 Mt"
+
+        if isinstance(time_limit, (int, float)):
+            cutoff = self.getStartDateTime() + timedelta(hours=float(time_limit))
+        elif isinstance(time_limit, timedelta):
+            cutoff = self.getStartDateTime() + time_limit
+        elif isinstance(time_limit, datetime):
+            cutoff = time_limit
+        else:
+            raise TypeError("time_limit must be hours (int/float), timedelta, or datetime")
+
+        # Work with un-normalized profile masses, then scale to prescribed emission mass
+        total_unscaled = 0.0
+        partial_unscaled = 0.0
+        for profile in self.profiles:
+            start = profile.start_datetime
+            duration_sec = int(getattr(profile, "duration_sec", 0))
+            # Zero-duration profiles contribute nothing; skip to avoid divide-by-zero.
+            if duration_sec <= 0:
+                continue
+            end = start + timedelta(seconds=duration_sec)
+            mass = profile.getProfileEmittedMass()
+
+            if end <= cutoff:
+                partial_unscaled += mass
+            elif start < cutoff:
+                overlap_frac = (cutoff - start).total_seconds() / duration_sec
+                partial_unscaled += mass * overlap_frac
+            else:
+                # starts after cutoff; no contribution
+                pass
+
+            total_unscaled += mass
+
+        if total_unscaled == 0.0:
+            return "0.000 Mt"
+
+        # Scale partial sum so full scenario equals type_of_emission.mass_Mt
+        scale = self.type_of_emission.mass_Mt / total_unscaled
+        mass_mt = partial_unscaled * scale
+        return f"{mass_mt:.3f} Mt"
     
     def get_profiles_Decimal_StartTimeAndDuration(self):
         start_times = []
