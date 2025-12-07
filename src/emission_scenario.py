@@ -659,3 +659,78 @@ class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
         #json_data["a_priori"] = expandVariable(json_data["emission_times"], json_data["level_heights"], json_data["ordering_index"], json_data["a_priori"])
 
         return json_data
+
+
+class EmissionScenario_HayliGubbi(EmissionScenario):
+    def __init__(self, type_of_emission, emissions_filename):
+        super().__init__(type_of_emission)
+        
+        # Parse emissions file
+        data = self.__parse_emission_file(emissions_filename)
+        times_str = data['times']
+        heights = data['heights']
+        emissions = data['emissions']
+        
+        # Convert ISO 8601 time strings to datetime objects
+        datetimes = [pd.to_datetime(t).to_pydatetime() for t in times_str]
+        
+        # Calculate duration between consecutive time points (in seconds)
+        durations = []
+        for i in range(len(datetimes) - 1):
+            delta_sec = (datetimes[i + 1] - datetimes[i]).total_seconds()
+            durations.append(delta_sec)
+        # Last profile gets zero duration (sentinel)
+        durations.append(0)
+        
+        # Create VerticalProfile for each time point
+        for i, dt in enumerate(datetimes):
+            emissions_at_time = emissions[:, i]
+            profile = VerticalProfile(
+                heights,
+                emissions_at_time,
+                dt.year,
+                dt.month,
+                dt.day,
+                dt.hour + dt.minute / 60.0,
+                durations[i]
+            )
+            profile.setDatetime(dt)
+            self.add_profile(profile)
+    
+    def __parse_emission_file(self, filename):
+        """
+        Parse an emission text file with the following format:
+        Row 1: 'time' followed by ISO 8601 datetime strings
+        Row 2: 'height' followed by height values in meters
+        Rows 3+: 2D array of emission values
+        
+        Returns a dictionary with keys 'times', 'heights', and 'emissions'
+        """
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+        
+        # Parse time line (row 1)
+        time_parts = lines[0].strip().split()
+        times_str = time_parts[1:]  # Skip 'time' label
+        
+        # Parse height line (row 2)
+        height_parts = lines[1].strip().split()
+        heights = np.array([float(h) for h in height_parts[1:]], dtype=np.float64)  # Skip 'height' label
+        
+        # Parse emission data (rows 3+)
+        emissions = []
+        for i in range(2, len(lines)):
+            row = lines[i].strip()
+            if row:  # Skip empty lines
+                values = np.array([float(v) for v in row.split()], dtype=np.float64)
+                emissions.append(values)
+        
+        emissions = np.array(emissions)  # Shape: (num_heights, num_times)
+        
+        emissions = np.flipud(emissions) # Flip the 2D array vertically
+        
+        return {
+            'times': times_str,
+            'heights': heights,
+            'emissions': emissions
+        }
