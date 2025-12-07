@@ -29,7 +29,7 @@ if __name__ == "__main__":
         EmissionScenario_HayliGubbi(so2_e,"./scenarios/Hayli Gubbi_Ukhov_2025/so2_emisisons.txt")
         ]
             
-    emission_writer = EmissionWriter_UniformInTimeProfiles(emisison_scenarios, netcdf_handler, output_interval_m=30)
+    emission_writer = EmissionWriter_NonUniformInHeightProfiles(emisison_scenarios, netcdf_handler, output_interval_m=30)
     
     #emission_writer.plot_scenarios()
     
