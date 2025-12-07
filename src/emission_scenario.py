@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import json
+import re
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -422,6 +423,155 @@ class EmissionScenario():
             profile.dh = dh
         
         self.__is_divided_by_dh = True
+
+    def set_values_by_criteria(self, value, time_start=None, time_end=None,
+                               height_min_m=None, height_max_m=None,
+                               height_above_m=None, height_below_m=None,
+                               condition_func=None, debug=False):
+        """
+        Set emission values on the scenario according to simple criteria or a custom function.
+
+        Parameters
+        - value: numeric value to set where the condition matches.
+        - time_start, time_end: optional. If provided, restrict to profiles whose
+          `start_datetime` falls within the interval. These may be:
+            * datetime.datetime objects (full-date comparison), or
+            * strings 'HH:MM' which will be treated as time-of-day comparisons
+              (applied to each profile's time-of-day), or
+            * pandas.Timestamp strings parseable by `pd.to_datetime`.
+        - height_min_m, height_max_m: restrict to heights between these (meters, inclusive).
+        - height_above_m / height_below_m: convenience single-sided bounds (meters).
+        - condition_func: optional callable(height_m, profile_datetime) -> bool.
+          If provided, it overrides the simple criteria and is used to decide
+          whether to set the cell to `value`.
+
+        Examples:
+          - set 1 everywhere between 10:00 and 12:00 at heights 3000-4000 m:
+              scen.set_values_by_criteria(1, time_start='10:00', time_end='12:00', height_min_m=3000, height_max_m=4000)
+          - set 0 above 15000 m:
+              scen.set_values_by_criteria(0, height_above_m=15000)
+          - use a custom callable:
+              scen.set_values_by_criteria(5, condition_func=lambda h, dt: (h>5000 and dt.hour==14))
+        """
+
+        # Helper to parse time params
+        def _parse_time_param(param):
+            if param is None:
+                return None
+
+            # numpy.datetime64 -> convert to python datetime
+            if isinstance(param, np.datetime64):
+                return ('datetime', pd.to_datetime(param).to_pydatetime())
+
+            # If it's a string that matches HH:MM or HH:MM:SS, treat it as time-of-day
+            if isinstance(param, str):
+                if re.match(r'^\d{1,2}:\d{2}(:\d{2})?$', param.strip()):
+                    try:
+                        t = pd.to_datetime(param, format='%H:%M').time()
+                        return ('time_of_day', t)
+                    except Exception:
+                        try:
+                            t = pd.to_datetime(param, format='%H:%M:%S').time()
+                            return ('time_of_day', t)
+                        except Exception:
+                            pass
+
+            # try pandas to_datetime to get a full datetime (handles ISO strings, pandas.Timestamp, etc.)
+            try:
+                dt = pd.to_datetime(param)
+                return ('datetime', dt.to_pydatetime())
+            except Exception:
+                raise TypeError(f"Could not parse time parameter: {param}")
+
+        ts_parsed = _parse_time_param(time_start)
+        te_parsed = _parse_time_param(time_end)
+
+        if debug:
+            print(f"[set_values_by_criteria] parsed time_start={ts_parsed}, time_end={te_parsed}")
+
+        # iterate through profiles and heights
+        for profile in self.profiles:
+            prof_dt = profile.start_datetime
+            # Determine whether this profile passes time filters
+            time_ok = True
+            if ts_parsed is not None or te_parsed is not None:
+                # If both are time-of-day, compare only time-of-day (preserve previous behaviour)
+                if ts_parsed and ts_parsed[0] == 'time_of_day' and te_parsed and te_parsed[0] == 'time_of_day':
+                    start_t = ts_parsed[1]
+                    end_t = te_parsed[1]
+                    cur_t = prof_dt.time()
+                    # handle wrap-around (e.g., 23:00-02:00)
+                    if start_t <= end_t:
+                        time_ok = (start_t <= cur_t <= end_t)
+                    else:
+                        time_ok = (cur_t >= start_t or cur_t <= end_t)
+                else:
+                    # For mixed or full-datetime inputs, compare full datetimes.
+                    # Anchor any time-of-day values to the profile's date.
+                    def _to_dt(parsed):
+                        if parsed is None:
+                            return None
+                        if parsed[0] == 'datetime':
+                            return parsed[1]
+                        # time_of_day: combine with profile date
+                        if parsed[0] == 'time_of_day':
+                            return datetime(prof_dt.year, prof_dt.month, prof_dt.day,
+                                            parsed[1].hour, parsed[1].minute, parsed[1].second)
+                        return None
+
+                    ts_dt = _to_dt(ts_parsed)
+                    te_dt = _to_dt(te_parsed)
+
+                    # If both datetimes are present, handle wrap-around where end <= start
+                    if ts_dt is not None and te_dt is not None:
+                        if te_dt < ts_dt:
+                            # assume end is on the next day
+                            te_dt = te_dt + timedelta(days=1)
+                        time_ok = (ts_dt <= prof_dt <= te_dt)
+                    else:
+                        # Only start or only end provided
+                        if ts_dt is not None:
+                            time_ok = (prof_dt >= ts_dt)
+                        if te_dt is not None:
+                            time_ok = (prof_dt <= te_dt)
+
+            if not time_ok:
+                if debug:
+                    print(f"[set_values_by_criteria] profile {profile} at {prof_dt} skipped by time filter")
+                continue
+
+            # Now loop over heights within this profile
+            for idx, h in enumerate(profile.h):
+                height_ok = True
+                if height_min_m is not None and h < height_min_m:
+                    height_ok = False
+                if height_max_m is not None and h > height_max_m:
+                    height_ok = False
+                if height_above_m is not None and h <= height_above_m:
+                    height_ok = False
+                if height_below_m is not None and h >= height_below_m:
+                    height_ok = False
+
+                if not height_ok:
+                    if debug:
+                        print(f"[set_values_by_criteria] profile {profile} at {prof_dt} height {h} skipped by height filter")
+                    continue
+
+                # If a custom callable is provided, it overrides the simple criteria
+                if condition_func is not None:
+                    try:
+                        do_set = bool(condition_func(h, prof_dt))
+                    except Exception as e:
+                        raise RuntimeError(f"condition_func raised an exception: {e}") from e
+                    if do_set:
+                        if debug:
+                            print(f"[set_values_by_criteria] setting profile {profile} at {prof_dt} height {h} -> {value} (by condition_func)")
+                        profile.values[idx] = value
+                else:
+                    # All simple checks passed -> set value
+                    if debug:
+                        print(f"[set_values_by_criteria] setting profile {profile} at {prof_dt} height {h} -> {value}")
+                    profile.values[idx] = value
         
 class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
