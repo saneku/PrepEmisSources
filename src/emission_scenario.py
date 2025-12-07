@@ -281,6 +281,23 @@ class EmissionScenario():
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
 
+        # Duplicate y ticks and labels on the right-hand side for clarity
+        ax = plt.gca()
+        ax_right = ax.twinx()
+        # Ensure identical limits and ticks
+        ax_right.set_ylim(ax.get_ylim())
+        ax_right.set_yticks(ax.get_yticks())
+        # Copy tick labels text from left axis
+        ax_right.set_yticklabels([t.get_text() for t in ax.get_yticklabels()])
+        # Copy locators so major/minor ticks match
+        try:
+            ax_right.yaxis.set_major_locator(ax.yaxis.get_major_locator())
+            ax_right.yaxis.set_minor_locator(ax.yaxis.get_minor_locator())
+        except Exception:
+            pass
+        # Do not copy the y-axis label to the right side (keep only ticks/labels)
+        ax_right.set_ylabel('')
+
         # Set x-axis limits: lower - round down to nearest day, upper - round up to next day
         min_time = time_edges[0].replace(hour=0, minute=0, second=0, microsecond=0)
         max_time = (time_edges[-1] + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)

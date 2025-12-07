@@ -1,6 +1,7 @@
 import numpy as np
 import calendar
 from datetime import datetime
+import pandas as pd
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
@@ -48,7 +49,33 @@ class VerticalProfile():
             return np.sum(self.values * self.dh * self.duration_sec)
     
     def setDatetime(self,d):
-        self.start_datetime=d.to_pydatetime()
+        # Accept several possible datetime-like inputs:
+        # - pandas.Timestamp (has to_pydatetime)
+        # - numpy.datetime64
+        # - native datetime.datetime
+        # For pandas Timestamp and objects with to_pydatetime, use that method.
+        try:
+            if hasattr(d, 'to_pydatetime'):
+                self.start_datetime = d.to_pydatetime()
+                return
+        except Exception:
+            pass
+
+        # numpy.datetime64 -> convert via pandas (keeps timezone handling minimal)
+        if isinstance(d, np.datetime64):
+            self.start_datetime = pd.to_datetime(d).to_pydatetime()
+            return
+
+        # native datetime
+        if isinstance(d, datetime):
+            self.start_datetime = d
+            return
+
+        # fallback: try pandas conversion which handles many string-like inputs
+        try:
+            self.start_datetime = pd.to_datetime(d).to_pydatetime()
+        except Exception as e:
+            raise TypeError(f"Unsupported datetime type for setDatetime: {type(d)}") from e
     
     def getProfileStartTimeAndDuration(self):
         return self.erup_beg,self.duration_sec/60.0
