@@ -11,9 +11,9 @@ import numpy as np
 # provided wrfinput file.
 
 if __name__ == "__main__":
-    # Location of the Pinatubo volcano
-    LAT, LON = 15.1429, 120.3496
-    YEAR, MONTH, DAY = 1991, 6, 15
+    # Prescribe the location of the volcano, start date, and profile's duration in seconds
+    LAT, LON = 13.51, 40.722
+    YEAR, MONTH, DAY = 2025, 11, 23
     #DURATION = 14*3600     # seconds
     
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
