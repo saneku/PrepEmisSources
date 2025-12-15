@@ -10,6 +10,10 @@ import numpy as np
 # Inverted ash and SO2 profiles [Mt/sec] are interpolated into the vertical grid from the 
 # provided wrfinput file.
 
+# Ukhov, A., Stenchikov, G., Schnell, J., Ahmadov, R., Rizza, U., Grell, G., and Hoteit, I.: 
+# Enhancing volcanic eruption simulations with the WRF-Chem v4.8, Geosci. Model Dev., 18, 9805–9825, 
+# https://doi.org/10.5194/gmd-18-9805-2025, 2025.
+
 if __name__ == "__main__":
     # Location of the Pinatubo volcano
     LAT, LON = 15.1429, 120.3496

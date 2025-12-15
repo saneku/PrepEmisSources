@@ -8,8 +8,12 @@ from datetime import datetime, timedelta
 # and drifted eastward over the Red Sea. The eruption was also accompanied by a significant SO2 plume.
 # https://volcano.si.edu/volcano.cfm?vn=221091
 
-# Ash: 08:30-15:30 UTC on 23 Nov 2025, thirty-minute VerticalProfile_Suzuki snapshots with tops descending 14->7 km, scale 1.0->0.1, then a final zero at 15:30 UTC.
-# SO2: 08:30-11:00 UTC same descending Suzuki sequence; 11:00-13:00 UTC Suzuki at fixed 17.5 km (scale 1.0->0.1); 13:00-23:00 UTC pause with zeros except a repeat of the first block from 18:00-20:30 UTC (half active, half zero); 23:00-01:00 UTC on 24 Nov Suzuki at 15 km (scale 1.0->0.1), then zero at 01:00 UTC.
+# Ash: 08:30-15:30 UTC on 23 Nov 2025, thirty-minute VerticalProfile_Suzuki snapshots 
+# with tops descending 14->7 km, scale 1.0->0.1, then a final zero at 15:30 UTC.
+
+# SO2: 08:30-11:00 UTC same descending Suzuki sequence; 11:00-13:00 UTC Suzuki at fixed 17.5 km (scale 1.0->0.1); 
+# 13:00-23:00 UTC pause with zeros except a repeat of the first block from 18:00-20:30 UTC (half active, half zero); 
+# 23:00-01:00 UTC on 24 Nov Suzuki at 15 km (scale 1.0->0.1), then zero at 01:00 UTC.
 
 if __name__ == "__main__":
     # Prescribe the location of the volcano, start date, and profile's duration in seconds

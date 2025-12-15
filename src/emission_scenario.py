@@ -230,7 +230,7 @@ class EmissionScenario():
 
         return cm
   
-    def plot(self,*args, **kwargs):
+    def _render_plot(self, *args, **kwargs):
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
         h_centers = self.profiles[0].h / 1000.0
         times = [profile.start_datetime for profile in self.profiles]
@@ -305,7 +305,30 @@ class EmissionScenario():
         plt.xlim(min_time, max_time)
         #plt.tight_layout()
         plt.title(self)
+        return plt.gcf()
+  
+    def plot(self, *args, **kwargs):
+        fig = self._render_plot(*args, **kwargs)
         plt.show()
+        return fig
+    
+    def save_fig(self, filename, dpi=300, *args, **kwargs):
+        """
+        Render the scenario plot and save it to disk.
+
+        Parameters
+        ----------
+        filename : str or path-like
+            Destination file path passed to matplotlib's savefig.
+        dpi : int, optional
+            Resolution in dots per inch, defaults to 150.
+        *args, **kwargs :
+            Forwarded to the plotting routine (same as `plot`).
+        """
+        fig = self._render_plot(*args, **kwargs)
+        fig.savefig(filename, dpi=dpi, bbox_inches='tight')
+        plt.close(fig)
+        return filename
   
     def __str__(self):
         s = self.__class__.__name__+" "+f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \
