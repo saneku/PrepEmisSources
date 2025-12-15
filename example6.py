@@ -11,7 +11,7 @@ import numpy as np
 # provided wrfinput file.
 
 if __name__ == "__main__":
-    # Prescribe the location of the volcano, start date, and profile's duration in seconds
+    # Prescribe the location of the volcano, start date, and profiles duration in seconds
     LAT, LON = 13.51, 40.722
     YEAR, MONTH, DAY = 2025, 11, 23
     #DURATION = 14*3600     # seconds
@@ -20,8 +20,10 @@ if __name__ == "__main__":
     y,x = netcdf_handler.findClosestGridCell(LAT,LON)
     staggerred_h=netcdf_handler.getColumn_H(x,y)
 
-    ash_e = Emission_Ash(mass_mt=5.0, lat=LAT, lon=LON, bin_n=10, mean_r=2.4, stddev=1.8)
-    so2_e = Emission_SO2(mass_mt=1.0,lat=LAT, lon=LON)
+    ash_e = Emission_Ash(mass_mt=1.0, lat=LAT, lon=LON, bin_n=10, mean_r=2.4, stddev=1.8)
+                                    #bin10,  bin9, bin8,   bin7,  bin6, bin5,   bin4, bin3,  bin2,   bin1
+    ash_e.setMassFractions(np.array([0.017, 0.158, 0.422, 0.326, 0.072, 0.005, 0.000, 0.000, 0.000, 0.000]))
+    so2_e = Emission_SO2(mass_mt=0.3,lat=LAT, lon=LON)
     emisison_scenarios = [ 
         # Ash emissions
         EmissionScenario_HayliGubbi(ash_e,"./scenarios/Hayli Gubbi_Ukhov_2025/ash_emissions.txt"),
@@ -59,6 +61,9 @@ if __name__ == "__main__":
     #        p.plot()
     #        print (f"Mass {sum(p.values):.2f}")
 
+    # SO2 mass emitted in first 2 hours
+    print(emisison_scenarios[1].get_emitted_mass_within(2))
+    
     emission_writer.plot_scenarios()
     # Plot the scenarios
     #scenarios[0].plot()
