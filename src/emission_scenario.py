@@ -153,7 +153,8 @@ class EmissionScenario():
             y_values = profile.h / 1000.0
             plt.plot(x_values, y_values, *args, **kwargs)
         
-        plt.ylim(0.0, 40)
+        model_top_km = np.max(h_centers) if len(h_centers) else 40.0
+        plt.ylim(0.0, model_top_km + 1.0)
         #plt.xlim(0.0,0.03)
         plt.ylabel('Altitude, $km$')
         plt.xlabel('Decimal hour')
@@ -270,7 +271,8 @@ class EmissionScenario():
         #cs.set_clim(*self._colorbar_range)
         plt.colorbar(cs, label='Emissions')
 
-        plt.ylim(0.0, 40)
+        model_top_km = np.max(h_centers) if len(h_centers) else 40.0
+        plt.ylim(0.0, model_top_km + 1.0)
         plt.ylabel('Altitude, $km$')
         plt.xlabel('Time')
         
@@ -282,27 +284,19 @@ class EmissionScenario():
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
 
-        # Duplicate y ticks and labels on the right-hand side for clarity
+        fig = plt.gcf()
+        fig.canvas.draw()
         ax = plt.gca()
         ax_right = ax.twinx()
-        # Ensure identical limits and ticks
         ax_right.set_ylim(ax.get_ylim())
-        ax_right.set_yticks(ax.get_yticks())
-        # Copy tick labels text from left axis
-        ax_right.set_yticklabels([t.get_text() for t in ax.get_yticklabels()])
-        # Copy locators so major/minor ticks match
         try:
             ax_right.yaxis.set_major_locator(ax.yaxis.get_major_locator())
             ax_right.yaxis.set_minor_locator(ax.yaxis.get_minor_locator())
         except Exception:
             pass
-        # Do not copy the y-axis label to the right side (keep only ticks/labels)
         ax_right.set_ylabel('')
 
-        # Set x-axis limits: lower - round down to nearest day, upper - round up to next day
-        min_time = time_edges[0].replace(hour=0, minute=0, second=0, microsecond=0)
-        max_time = (time_edges[-1] + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-        plt.xlim(min_time, max_time)
+        plt.xlim(time_edges[0], time_edges[-1])
         #plt.tight_layout()
         plt.title(self)
         return plt.gcf()
