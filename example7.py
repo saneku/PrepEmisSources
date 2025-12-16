@@ -152,6 +152,7 @@ if __name__ == "__main__":
 
     #cleaning the scenarios from noise by removing emissions below certain heights and times
     emisison_scenarios[0].set_values_by_criteria(0, height_min_m=0, height_max_m=2000)
+    emisison_scenarios[0].set_values_by_criteria(0, height_min_m=16000, height_max_m=24000)
     emisison_scenarios[1].set_values_by_criteria(0, height_min_m=0, height_max_m=7500)
     emisison_scenarios[1].set_values_by_criteria(0, time_start='2025-11-24T08:00')#, time_end='2025-11-24T12:00') 
     emisison_scenarios[1].set_values_by_criteria(0, height_min_m=17000, height_max_m=30000)
