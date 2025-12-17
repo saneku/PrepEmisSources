@@ -31,6 +31,10 @@ class EmissionScenario():
     def __list_profiles(self):
         heights_on_levels=self.profiles[0].h
         scenario_2d_array=np.array([profile.values for profile in self.profiles]).T
+        # header info for debugging dumps
+        time_strings = [p.start_datetime.strftime("%Y-%m-%dT%H:%M:%S") for p in self.profiles]
+        print("time " + " ".join(time_strings))
+        print("height " + " ".join(f"{h:.2f}" for h in heights_on_levels))
         
         for j in np.arange(len(heights_on_levels)-1,-1,-1):
 	        self.__print_vector(scenario_2d_array[j,:],sep=' ',f='{:0.6e}')
@@ -48,7 +52,7 @@ class EmissionScenario():
     #        yield p
 
     def __repr__(self):
-        return f"EmissionScenario(profiles={self.__list_profiles()})"
+        return f"\nEmissionScenario(profiles={self.__list_profiles()})"
     
     def __print_vector(self,vector,sep=' ',f="{:0.6e}"):
         print((sep.join(f.format(x) for x in vector)))
