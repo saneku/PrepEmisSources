@@ -2,6 +2,11 @@ from src import *
 import numpy as np
 from datetime import datetime, timedelta
 
+# Example 8: Hayli Gubbi Suzuki fitting example (example7) + example5 SO2 block splice:
+# - ingest Hayli Gubbi ash/SO2 grids,
+# - approximate each snapshot with Suzuki profiles for writing,
+# - replace the 11-14 UTC SO2 window with block two from example5.py.
+
 
 def _decimal_hour(dt):
     """Convert a datetime to decimal hours."""
@@ -198,11 +203,6 @@ def emitted_mass_between(scenario, start_dt, end_dt):
         overlap_frac = (overlap_end - overlap_start).total_seconds() / duration_sec
         total += profile.getProfileEmittedMass() * overlap_frac
     return total
-
-# Example 8: Hayli Gubbi Suzuki fitting example (example7) + example5 SO2 block splice:
-# - ingest Hayli Gubbi ash/SO2 grids,
-# - approximate each snapshot with Suzuki profiles for writing,
-# - replace the 11-14 UTC SO2 window with block two from example5.py.
 
 if __name__ == "__main__":
     # Location of the Hayli Gubbi volcano

@@ -5,8 +5,8 @@ import argparse
 # Demonstrates how to reconstruct and plot an emission scenario directly from an
 # existing wrfchem emission NetCDF file that was produced by PrepEmisSources.
 
-#python example_read.py wrfchemv_d01.2025-11-23_08\:30\:00 --material ash
-#python example_read.py wrfchemv_d01.2025-11-23_08\:30\:00 --material so2
+#python example9.py wrfchemv_d01.2025-11-23_08\:30\:00 --material ash
+#python example9.py wrfchemv_d01.2025-11-23_08\:30\:00 --material so2
 
 def parse_args():
     parser = argparse.ArgumentParser(

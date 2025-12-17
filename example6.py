@@ -60,6 +60,10 @@ if __name__ == "__main__":
     print(emission_scenarios[1].get_emitted_mass_within(2))
     
     emission_writer.plot_scenarios()
+    
+    emission_scenarios[0].save_fig("ash_hayli_gubbi_ash_suzuki_approximation.png", dpi=300)
+    emission_scenarios[1].save_fig("so2_hayli_gubbi_so2_suzuki_approximation.png", dpi=300)
+
     # Plot the scenarios
     #scenarios[0].plot()
     #scenarios[1].plot()

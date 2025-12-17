@@ -1,6 +1,10 @@
 from src import *
 import numpy as np
 
+# Example 7: Hayli Gubbi Suzuki fitting example:
+# -ingest Hayli Gubbi ash/SO₂ grids (emission strengths at each height/time cell),
+# -approximate each snapshot with one Suzuki profile (grid-searching K/H) before plotting/writing.
+
 
 def _decimal_hour(dt):
     """Convert a datetime to decimal hours."""
@@ -127,10 +131,6 @@ def scenario_rmse(original_scenario, approximated_scenario):
         raise ValueError("Scenario grids do not match; interpolate before comparing")
 
     return float(np.sqrt(np.mean((original_matrix - approx_matrix) ** 2)))
-
-# Example 7: Hayli Gubbi Suzuki fitting example:
-# -ingest Hayli Gubbi ash/SO₂ grids (emission strengths at each height/time cell),
-# -approximate each snapshot with one Suzuki profile (grid-searching K/H) before plotting/writing.
 
 if __name__ == "__main__":
     # Location of the Hayli Gubbi volcano

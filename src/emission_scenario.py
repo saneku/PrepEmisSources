@@ -140,7 +140,7 @@ class EmissionScenario():
         self.__scaleProfiles(scale)
         mass_after=self.getScenarioEmittedMass()
         print(f'\n{self.type_of_emission.get_name_of_material()} mass before: \
-              {mass_before:.3f} Mt, and after: {mass_after:.3f} Mt normalisation')
+              {mass_before:.3f} Mt, and after normalisation: {mass_after:.3f} Mt')
         
         self.__is_normalized_by_total_mass = True
     

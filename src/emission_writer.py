@@ -29,7 +29,7 @@ class EmissionWriter():
             # no profiles
             return
         dom_top = float(np.max(column_heights)) if len(column_heights) > 0 else 0.0
-        if src_top > dom_top:
+        if src_top > dom_top+1:     # allow 1 m tolerance
             mat = scenario.type_of_emission.get_name_of_material()
             lat = scenario.type_of_emission.lat
             lon = scenario.type_of_emission.lon
