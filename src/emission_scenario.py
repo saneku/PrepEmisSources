@@ -631,6 +631,89 @@ class EmissionScenario():
                     if debug:
                         print(f"[set_values_by_criteria] setting profile {profile} at {prof_dt} height {h} -> {value}")
                     profile.values[idx] = value
+
+    def scale_values_by_criteria(self, factor, time_start=None, time_end=None,
+                                 height_min_m=None, height_max_m=None,
+                                 height_above_m=None, height_below_m=None,
+                                 condition_func=None, debug=False):
+        """
+        Scale emission values according to time/height criteria or a custom function.
+
+        Parameters are the same as set_values_by_criteria, but apply a multiplicative
+        factor instead of assigning an absolute value. time_start/time_end accept
+        datetime objects or strings parseable by pandas.to_datetime.
+        """
+        if not isinstance(factor, (int, float)):
+            raise TypeError("factor must be a number")
+
+        def _parse_datetime_param(param, name):
+            if param is None:
+                return None
+            if isinstance(param, datetime):
+                return param
+            if isinstance(param, str):
+                try:
+                    return pd.to_datetime(param).to_pydatetime()
+                except Exception:
+                    raise TypeError(f"{name} string could not be parsed: {param}")
+            raise TypeError(f"{name} must be a datetime or string when provided")
+
+        time_start = _parse_datetime_param(time_start, "time_start")
+        time_end = _parse_datetime_param(time_end, "time_end")
+
+        if debug:
+            print(f"[scale_values_by_criteria] time_start={time_start}, time_end={time_end}")
+
+        for profile in self.profiles:
+            prof_dt = profile.start_datetime
+            time_ok = True
+            if time_start is not None or time_end is not None:
+                ts_dt = time_start
+                te_dt = time_end
+                if ts_dt is not None and te_dt is not None:
+                    if te_dt < ts_dt:
+                        te_dt = te_dt + timedelta(days=1)
+                    time_ok = (ts_dt <= prof_dt <= te_dt)
+                else:
+                    if ts_dt is not None:
+                        time_ok = (prof_dt >= ts_dt)
+                    if te_dt is not None:
+                        time_ok = (prof_dt <= te_dt)
+
+            if not time_ok:
+                if debug:
+                    print(f"[scale_values_by_criteria] profile {profile} at {prof_dt} skipped by time filter")
+                continue
+
+            for idx, h in enumerate(profile.h):
+                height_ok = True
+                if height_min_m is not None and h < height_min_m:
+                    height_ok = False
+                if height_max_m is not None and h > height_max_m:
+                    height_ok = False
+                if height_above_m is not None and h <= height_above_m:
+                    height_ok = False
+                if height_below_m is not None and h >= height_below_m:
+                    height_ok = False
+
+                if not height_ok:
+                    if debug:
+                        print(f"[scale_values_by_criteria] profile {profile} at {prof_dt} height {h} skipped by height filter")
+                    continue
+
+                if condition_func is not None:
+                    try:
+                        do_scale = bool(condition_func(h, prof_dt))
+                    except Exception as e:
+                        raise RuntimeError(f"condition_func raised an exception: {e}") from e
+                    if do_scale:
+                        if debug:
+                            print(f"[scale_values_by_criteria] scaling profile {profile} at {prof_dt} height {h} by {factor}")
+                        profile.values[idx] *= factor
+                else:
+                    if debug:
+                        print(f"[scale_values_by_criteria] scaling profile {profile} at {prof_dt} height {h} by {factor}")
+                    profile.values[idx] *= factor
         
 class EmissionScenario_Inverted_Pinatubo(EmissionScenario):
     def __init__(self, type_of_emission, filename):
