@@ -264,46 +264,83 @@ class EmissionScenario():
             # Single level fallback
             y_edges = np.array([max(0.0, h_centers[0] - 0.5), h_centers[0] + 0.5])
 
-        fig = plt.figure(figsize=(14, 7))
-        plt.pcolormesh(time_edges, y_edges, scenario_2d_array, alpha=0.08, zorder=2, facecolor='none', edgecolors='grey', linewidths=0.01)
-        cs = plt.pcolormesh(time_edges, y_edges, scenario_2d_array, cmap=self.__getColorMap())
+        fig, (ax_profile, ax_main) = plt.subplots(
+            1, 2, figsize=(15, 7),
+            gridspec_kw={"width_ratios": [1.0, 4.0], "wspace": 0.12},
+            sharey=True
+        )
+        ax_main.pcolormesh(time_edges, y_edges, scenario_2d_array, alpha=0.08, zorder=2,
+                           facecolor='none', edgecolors='grey', linewidths=0.01)
+        cs = ax_main.pcolormesh(time_edges, y_edges, scenario_2d_array, cmap=self.__getColorMap())
         
         # Store colorbar range if not already set
         if not hasattr(self, "_colorbar_range"):
             self._colorbar_range = (np.nanmin(scenario_2d_array), np.nanmax(scenario_2d_array))
         # Apply stored colorbar range
         #cs.set_clim(*self._colorbar_range)
-        plt.colorbar(cs, label='Emissions')
+        fig.colorbar(cs, ax=ax_main, label='Emissions')
 
         model_top_km = np.max(h_centers) if len(h_centers) else 40.0
-        plt.ylim(0.0, model_top_km + 1.0)
-        plt.ylabel('Altitude, $km$')
-        plt.xlabel('Time')
+        ax_main.set_ylim(0.0, model_top_km + 1.0)
+        ax_main.set_ylabel('Altitude, $km$')
+        ax_main.set_xlabel('Time')
         
         # Place ticks on interval edges for clarity
         times_with_minutes = [dt.strftime('%H:%M') for dt in time_edges]
-        plt.xticks(time_edges, times_with_minutes, rotation=90, fontsize=6)
+        ax_main.set_xticks(time_edges)
+        ax_main.set_xticklabels(times_with_minutes, rotation=90, fontsize=6)
 
-        plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
-        plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
-        plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
+        ax_main.axhline(y=16.5, linestyle=':', color='black', linewidth=1.0)
+        ax_main.yaxis.set_major_locator(plt.MultipleLocator(5))
+        ax_main.yaxis.set_minor_locator(plt.MultipleLocator(1))
+        ax_main.tick_params(axis='y', labelleft=True)
 
-        fig = plt.gcf()
         fig.canvas.draw()
-        ax = plt.gca()
-        ax_right = ax.twinx()
-        ax_right.set_ylim(ax.get_ylim())
+        ax_right = ax_main.twinx()
+        ax_right.set_ylim(ax_main.get_ylim())
         try:
-            ax_right.yaxis.set_major_locator(ax.yaxis.get_major_locator())
-            ax_right.yaxis.set_minor_locator(ax.yaxis.get_minor_locator())
+            ax_right.yaxis.set_major_locator(ax_main.yaxis.get_major_locator())
+            ax_right.yaxis.set_minor_locator(ax_main.yaxis.get_minor_locator())
         except Exception:
             pass
         ax_right.set_ylabel('')
 
-        plt.xlim(time_edges[0], time_edges[-1])
-        #plt.tight_layout()
-        plt.title(self)
-        return plt.gcf()
+        ax_main.set_xlim(time_edges[0], time_edges[-1])
+
+        # Time-integrated emission profile on the left (sum over time, keep height axis).
+        durations = np.array(durations_sec, dtype=float)
+        if durations.size > 0:
+            integrated_profile = scenario_2d_array @ durations
+        else:
+            integrated_profile = np.zeros_like(h_centers)
+        material = self.type_of_emission.get_name_of_material()
+        profile_colors = {
+            "ash": "grey",
+            "sulfate": "red",
+            "so2": "darkblue",
+            "watervapor": "blue",
+        }
+        line_color = profile_colors.get(material, "black")
+        ax_profile.plot(
+            integrated_profile,
+            h_centers,
+            color=line_color,
+            linewidth=1.8,
+            marker='o',
+            markersize=2,
+        )
+        ax_profile.set_xlabel("Time integrated emission, $Mt$")
+        ax_profile.set_ylabel('Altitude, $km$')
+        ax_profile.grid(True, alpha=0.3)
+        ax_profile.axhline(y=16.5, linestyle=':', color='black', linewidth=1.0)
+        ax_profile.yaxis.set_major_locator(ax_main.yaxis.get_major_locator())
+        ax_profile.yaxis.set_minor_locator(ax_main.yaxis.get_minor_locator())
+        ax_profile.tick_params(axis='y', labelleft=True)
+        ax_profile.tick_params(axis='x', labelsize=8)
+
+        ax_main.set_title(self)
+        fig.subplots_adjust(left=0.06, right=0.98)
+        return fig
   
     def plot(self, *args, **kwargs):
         fig = self._render_plot(*args, **kwargs)
@@ -329,8 +366,9 @@ class EmissionScenario():
         return filename
   
     def __str__(self):
+        newline = "\n\n" if self.type_of_emission.get_name_of_material() == "so2" else "\n"
         s = self.__class__.__name__+" "+f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \
-        \nStart time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. '
+        {newline}Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. '
         
         if (self.__is_divided_by_dh):
             if (self.__is_normalized_by_total_mass):
