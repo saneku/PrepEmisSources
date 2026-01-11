@@ -5,6 +5,7 @@ import json
 import re
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+from matplotlib import font_manager as fm
 from matplotlib.colors import LinearSegmentedColormap
 from .profiles import *
 from .emissions import *
@@ -152,6 +153,8 @@ class EmissionScenario():
         
         hours=[profile.hour for profile in self.profiles]
         fig = plt.figure(figsize=(18,7))
+        label_size = self._font_size_plus(plt.rcParams.get("axes.labelsize", plt.rcParams.get("font.size", 10)))
+        tick_size = self._font_size_plus(plt.rcParams.get("xtick.labelsize", plt.rcParams.get("font.size", 10)))
         for i, profile in enumerate(self.profiles):
             x_values = scale_factor * profile.values + profile.hour
             y_values = profile.h / 1000.0
@@ -160,18 +163,40 @@ class EmissionScenario():
         model_top_km = np.max(h_centers) if len(h_centers) else 40.0
         plt.ylim(0.0, model_top_km + 1.0)
         #plt.xlim(0.0,0.03)
-        plt.ylabel('Altitude, $km$')
-        plt.xlabel('Decimal hour')
+        plt.ylabel('Altitude, $km$', fontsize=label_size)
+        plt.xlabel('Decimal hour', fontsize=label_size)
 
         plt.axhline(y=16.5, linestyle=':',color='black',linewidth=1.0)
         plt.gca().yaxis.set_major_locator(plt.MultipleLocator(5))
         plt.gca().yaxis.set_minor_locator(plt.MultipleLocator(1))
-        plt.xticks(hours)
+        plt.xticks(hours, fontsize=tick_size)
+        plt.gca().tick_params(axis='y', labelsize=tick_size)
        
         plt.title(self)
         
         plt.grid(True,alpha=0.3)
         plt.show()
+
+    @staticmethod
+    def _font_size_plus(size, delta=4):
+        try:
+            return float(size) + delta
+        except (TypeError, ValueError):
+            pass
+        try:
+            return fm.FontProperties(size=size).get_size_in_points() + delta
+        except Exception:
+            return float(plt.rcParams.get("font.size", 10)) + delta
+
+    def _emission_rate_units_tex(self):
+        if self.__is_divided_by_dh:
+            return r"Mt\ m^{-1}\ s^{-1}"
+        return r"Mt\ s^{-1}"
+
+    def _emission_integrated_units_tex(self):
+        if self.__is_divided_by_dh:
+            return r"Mt\ m^{-1}"
+        return r"Mt"
   
     def __getColorMap(self,colormap = 'stohl', bins=256):
         #taken from https://github.com/metno/VolcanicAshInversion/
@@ -237,6 +262,8 @@ class EmissionScenario():
   
     def _render_plot(self, *args, **kwargs):
         scenario_2d_array = np.array([profile.values for profile in self.profiles]).T
+        label_size = self._font_size_plus(plt.rcParams.get("axes.labelsize", plt.rcParams.get("font.size", 10)))
+        tick_size = self._font_size_plus(plt.rcParams.get("xtick.labelsize", plt.rcParams.get("font.size", 10)))
         h_centers = self.profiles[0].h / 1000.0
         times = [profile.start_datetime for profile in self.profiles]
         durations_sec = [int(getattr(profile, 'duration_sec', 0)) for profile in self.profiles]
@@ -278,22 +305,30 @@ class EmissionScenario():
             self._colorbar_range = (np.nanmin(scenario_2d_array), np.nanmax(scenario_2d_array))
         # Apply stored colorbar range
         #cs.set_clim(*self._colorbar_range)
-        fig.colorbar(cs, ax=ax_main, label='Emissions')
+        cbar = fig.colorbar(cs, ax=ax_main)
+        rate_units = self._emission_rate_units_tex()
+        cbar.set_label(f"Emissions, $\\mathit{{{rate_units}}}$", fontsize=label_size)
+        cbar.ax.tick_params(labelsize=tick_size)
 
         model_top_km = np.max(h_centers) if len(h_centers) else 40.0
         ax_main.set_ylim(0.0, model_top_km + 1.0)
-        ax_main.set_ylabel('Altitude, $km$')
-        ax_main.set_xlabel('Time')
+        ax_main.set_ylabel('Altitude, $km$', fontsize=label_size)
+        ax_main.set_xlabel('Time', fontsize=label_size)
         
-        # Place ticks on interval edges for clarity
+        # Place ticks on every other interval edge for clarity
         times_with_minutes = [dt.strftime('%H:%M') for dt in time_edges]
-        ax_main.set_xticks(time_edges)
-        ax_main.set_xticklabels(times_with_minutes, rotation=90, fontsize=6)
+        tick_indices = list(range(0, len(time_edges), 2))
+        tick_edges = [time_edges[i] for i in tick_indices]
+        tick_labels = [times_with_minutes[i] for i in tick_indices]
+        ax_main.set_xticks(tick_edges)
+        ax_main.set_xticklabels(tick_labels, rotation=90, fontsize=self._font_size_plus(6))
+        ax_main.set_xticks(time_edges, minor=True)
+        ax_main.tick_params(axis='x', which='minor', length=3)
 
         ax_main.axhline(y=16.5, linestyle=':', color='black', linewidth=1.0)
         ax_main.yaxis.set_major_locator(plt.MultipleLocator(5))
         ax_main.yaxis.set_minor_locator(plt.MultipleLocator(1))
-        ax_main.tick_params(axis='y', labelleft=True)
+        ax_main.tick_params(axis='y', labelleft=True, labelsize=tick_size)
 
         fig.canvas.draw()
         ax_right = ax_main.twinx()
@@ -329,14 +364,18 @@ class EmissionScenario():
             marker='o',
             markersize=2,
         )
-        ax_profile.set_xlabel("Time integrated emission, $Mt$")
-        ax_profile.set_ylabel('Altitude, $km$')
+        integrated_units = self._emission_integrated_units_tex()
+        ax_profile.set_xlabel(
+            f"Time integrated emission, $\\mathit{{{integrated_units}}}$",
+            fontsize=label_size,
+        )
+        ax_profile.set_ylabel('Altitude, $km$', fontsize=label_size)
         ax_profile.grid(True, alpha=0.3)
         ax_profile.axhline(y=16.5, linestyle=':', color='black', linewidth=1.0)
         ax_profile.yaxis.set_major_locator(ax_main.yaxis.get_major_locator())
         ax_profile.yaxis.set_minor_locator(ax_main.yaxis.get_minor_locator())
-        ax_profile.tick_params(axis='y', labelleft=True)
-        ax_profile.tick_params(axis='x', labelsize=8)
+        ax_profile.tick_params(axis='y', labelleft=True, labelsize=tick_size)
+        ax_profile.tick_params(axis='x', labelsize=self._font_size_plus(8))
 
         ax_main.set_title(self)
         fig.subplots_adjust(left=0.06, right=0.98)

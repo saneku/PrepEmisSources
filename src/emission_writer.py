@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import wraps
+from pathlib import Path
 from src import *
 
 import numpy as np
@@ -44,9 +45,22 @@ class EmissionWriter():
     def _getScenarios(self):
         return self.__scenarios
 
-    def plot_scenarios(self):
-        for scenario in self._getScenarios():
-            scenario.plot()
+    def plot_scenarios(self, output_dir=None, dpi=300, filename_fmt="scenario_{index:02d}_{material}.png", *args, **kwargs):
+        """
+        Plot scenarios or save them to disk if an output directory is provided.
+        """
+        if output_dir is not None:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+        for i, scenario in enumerate(self._getScenarios(), start=1):
+            if output_dir is None:
+                scenario.plot(*args, **kwargs)
+                continue
+
+            material = scenario.type_of_emission.get_name_of_material()
+            filename = filename_fmt.format(index=i, material=material)
+            scenario.save_fig(output_dir / filename, dpi=dpi, *args, **kwargs)
             #scenario.plot_profiles()#linestyle='-', color='blue')
 
     @staticmethod

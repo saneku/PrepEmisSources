@@ -53,6 +53,9 @@ if __name__ == "__main__":
     
     
     emission_writer.plot_scenarios()
+    #for i, scenario in enumerate(emission_scenarios, start=1):
+    #    scenario.save_fig(f"./scenario_{i:02d}.png", dpi=300)
+
     #exit()
 
     # Plot the scenarios
