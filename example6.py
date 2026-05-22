@@ -11,14 +11,17 @@ if __name__ == "__main__":
     YEAR, MONTH, DAY = 2025, 11, 23
     #DURATION = 14*3600     # seconds
     
+    ash_mass_mt = 0.8
+    so2_mass_mt = 0.3
+
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
     y,x = netcdf_handler.findClosestGridCell(LAT,LON)
     staggerred_h=netcdf_handler.getColumn_H(x,y)
 
-    ash_e = Emission_Ash(mass_mt=1.0, lat=LAT, lon=LON, bin_n=10, mean_r=2.4, stddev=1.8)
+    ash_e = Emission_Ash(mass_mt=ash_mass_mt, lat=LAT, lon=LON, bin_n=10, mean_r=2.4, stddev=1.8)
                                     #bin10,  bin9, bin8,   bin7,  bin6, bin5,   bin4, bin3,  bin2,   bin1
     ash_e.setMassFractions(np.array([0.017, 0.158, 0.422, 0.326, 0.072, 0.005, 0.000, 0.000, 0.000, 0.000]))
-    so2_e = Emission_SO2(mass_mt=0.3,lat=LAT, lon=LON)
+    so2_e = Emission_SO2(mass_mt=so2_mass_mt, lat=LAT, lon=LON)
     #h2o_e = Emission_WaterVapor(mass_mt=3.0,lat=LAT, lon=LON)
     
     emission_scenarios = [ 

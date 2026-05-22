@@ -292,7 +292,7 @@ class EmissionScenario():
             y_edges = np.array([max(0.0, h_centers[0] - 0.5), h_centers[0] + 0.5])
 
         fig, (ax_profile, ax_main) = plt.subplots(
-            1, 2, figsize=(15, 7),
+            1, 2, figsize=(15, 9),
             gridspec_kw={"width_ratios": [1.0, 4.0], "wspace": 0.12},
             sharey=True
         )
@@ -307,13 +307,13 @@ class EmissionScenario():
         #cs.set_clim(*self._colorbar_range)
         cbar = fig.colorbar(cs, ax=ax_main)
         rate_units = self._emission_rate_units_tex()
-        cbar.set_label(f"Emissions, $\\mathit{{{rate_units}}}$", fontsize=label_size)
-        cbar.ax.tick_params(labelsize=tick_size)
+        cbar.set_label(f"Emissions, $\\mathit{{{rate_units}}}$", fontsize=label_size + 4)
+        cbar.ax.tick_params(labelsize=tick_size + 4)
 
         model_top_km = np.max(h_centers) if len(h_centers) else 40.0
         ax_main.set_ylim(0.0, model_top_km + 1.0)
         ax_main.set_ylabel('Altitude, $km$', fontsize=label_size)
-        ax_main.set_xlabel('Time', fontsize=label_size)
+        ax_main.set_xlabel('Time, UTC', fontsize=label_size + 4)
         
         # Place ticks on every other interval edge for clarity
         times_with_minutes = [dt.strftime('%H:%M') for dt in time_edges]
@@ -321,7 +321,7 @@ class EmissionScenario():
         tick_edges = [time_edges[i] for i in tick_indices]
         tick_labels = [times_with_minutes[i] for i in tick_indices]
         ax_main.set_xticks(tick_edges)
-        ax_main.set_xticklabels(tick_labels, rotation=90, fontsize=self._font_size_plus(6))
+        ax_main.set_xticklabels(tick_labels, rotation=90, fontsize=self._font_size_plus(10))
         ax_main.set_xticks(time_edges, minor=True)
         ax_main.tick_params(axis='x', which='minor', length=3)
 
@@ -378,7 +378,7 @@ class EmissionScenario():
         ax_profile.tick_params(axis='x', labelsize=self._font_size_plus(8))
 
         ax_main.set_title(self)
-        fig.subplots_adjust(left=0.06, right=0.98)
+        fig.subplots_adjust(left=0.06, right=0.98, bottom=0.14)
         return fig
   
     def plot(self, *args, **kwargs):

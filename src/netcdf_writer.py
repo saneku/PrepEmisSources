@@ -5,6 +5,7 @@ import xarray as xr
 import datetime
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
+from matplotlib import font_manager as fm
 
 from .emission_scenario import EmissionScenario
 from .emissions import Emission_Ash, Emission_SO2, Emission_Sulfate, Emission_WaterVapor
@@ -313,8 +314,17 @@ class WRFNetCDFWriter:
         #for key, data in total_fractions.items():
         #    print(f"{key}\t{(data/sum(total_fractions.values())):.3f}")            
         print("--------------------------")
-        plt.ylabel('Mass, $Mt$')
-        plt.xlabel('Time, UTC')
+        label_size = plt.rcParams.get("axes.labelsize", plt.rcParams.get("font.size", 10))
+        try:
+            label_size = float(label_size) + 2
+        except (TypeError, ValueError):
+            try:
+                label_size = fm.FontProperties(size=label_size).get_size_in_points() + 2
+            except Exception:
+                label_size = float(plt.rcParams.get("font.size", 10)) + 2
+
+        plt.ylabel('Mass, $Mt$', fontsize=label_size)
+        plt.xlabel('Time, UTC', fontsize=label_size)
         plt.legend(loc="best")
         plt.tight_layout()
         plt.grid(True, alpha=0.3)
