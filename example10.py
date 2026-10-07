@@ -1,4 +1,5 @@
 from src import *
+import sys
 import numpy as np
 from datetime import datetime, timedelta
 from scipy.stats import norm
@@ -230,7 +231,10 @@ def print_summary(scenario):
 if __name__ == "__main__":
     # Path to the directory with the 'wrfinput_d01' file
     netcdf_handler = WRFNetCDFWriter(source_dir="./")
-    y, x = netcdf_handler.findClosestGridCell(LAT, LON)
+    try:
+        y, x = netcdf_handler.findClosestGridCell(LAT, LON)
+    except ValueError as err:
+        sys.exit(f"ERROR: {err}")
     # heights of the 'mass' points (a.s.l.) in the model column that contains the volcano
     staggerred_h = netcdf_handler.getColumn_H(x, y)
 

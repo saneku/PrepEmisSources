@@ -174,21 +174,24 @@ class WRFNetCDFWriter:
         print (f"Adding {var_name} {caption} {units} into {wrf_file}")
 
     def findClosestGridCell(self, lat, lon):
-        nrow = len(self.xlat)
-        ncol = len(self.xlon[0])
-        dist0 = 1000.0
-        ii = 0
-        jj = 0
-        for i in range(nrow):
-            for j in range(ncol):
-                dist = np.sqrt((self.xlon[i, j] - lon) ** 2 + (self.xlat[i, j] - lat) ** 2)
-                if dist < dist0:
-                    dist0 = dist
-                    jj = j
-                    ii = i
-        if ii == 0 and jj == 0:
-            raise ValueError("The closest grid cell is at the boundary (0,0).")
-        return ii, jj
+        xlat = np.asarray(self.xlat, dtype=float)
+        xlon = np.asarray(self.xlon, dtype=float)
+        # distance in km (the equirectangular approximation is enough to find the closest cell)
+        dlat = xlat - lat
+        dlon = (xlon - lon + 180.0) % 360.0 - 180.0
+        dist_km = 111.195 * np.sqrt(dlat ** 2 + (np.cos(np.radians(lat)) * dlon) ** 2)
+        ii, jj = np.unravel_index(np.argmin(dist_km), dist_km.shape)
+
+        # A point inside the domain is always within ~0.71 grid spacings of the closest cell centre
+        grid_spacing_km = np.sqrt(float(self.area[ii, jj])) / 1000.0
+        if dist_km[ii, jj] > 1.1 * grid_spacing_km:
+            raise ValueError(
+                f"The location lat={lat}, lon={lon} is outside the domain of "
+                f"'{self.source_dir}{self.orgn_wrf_input_file}' "
+                f"(lat {xlat.min():.2f} to {xlat.max():.2f}, lon {xlon.min():.2f} to {xlon.max():.2f}); "
+                f"the closest grid cell is {dist_km[ii, jj]:.0f} km away. "
+                f"Use a location inside the domain or a wrfinput file that covers it.")
+        return int(ii), int(jj)
 
     #heights of the 'mass' points
     def getColumn_H(self, x, y):
