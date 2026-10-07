@@ -291,7 +291,7 @@ class WRFNetCDFWriter:
                 #print(time_idx, curr_time)
                 for key, data in self.__emissions.items():
                     if key == "ash":
-                        total_emission = np.sum(np.sum(wrf_volc_file.variables[f"{data['var']}{i}"][time_idx, :] * self.area) for i in range(1, 11))
+                        total_emission = sum(np.sum(wrf_volc_file.variables[f"{data['var']}{i}"][time_idx, :] * self.area) for i in range(1, 11))
                         #key_name = f"{data['var']}{index}"
                         #if key_name not in total_fractions:
                         #    total_fractions[key_name] = 0.0
