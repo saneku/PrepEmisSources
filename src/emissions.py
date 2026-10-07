@@ -28,7 +28,7 @@ class Emission_Ash(Emission):
         self._mass_fractions_custom = False
         
         if bin_n not in [4,10]:
-            ValueError("Number of ash bins must be 4 or 10")
+            raise ValueError("Number of ash bins must be 4 or 10")
             
         self.nbin = bin_n
         self.ash_mass_factors = self.__compute_ash_mass_fractions()
@@ -93,7 +93,7 @@ class Emission_Ash(Emission):
         ash_mass_factors = np.asarray(ash_mass_factors)
         self.nbin=ash_mass_factors.shape[0]
         if self.nbin not in [4,10]:
-            ValueError("Number of ash bins must be 4 or 10")
+            raise ValueError("Number of ash bins must be 4 or 10")
         
         if not np.isclose(np.sum(ash_mass_factors), 1.0):
             raise ValueError(f"sum(xmas_sect)={np.sum(ash_mass_factors):0.2f} Should be =1.0")

@@ -382,9 +382,7 @@ class WRFNetCDFWriter:
                 ash_fractions = None
                 total_bin_mass = np.sum(bin_mass)
                 if total_bin_mass > 0:
-                    ash_fractions = bin_mass / total_bin_mass
-                
-                ash_fractions = np.flip(ash_fractions)  # Reverse to match Emission_Ash ordering
+                    ash_fractions = np.flip(bin_mass / total_bin_mass)  # Reverse to match Emission_Ash ordering
 
             else:
                 var_name = mtrl['var']

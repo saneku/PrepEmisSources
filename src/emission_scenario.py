@@ -13,10 +13,10 @@ from .emissions import *
 class EmissionScenario():
     def __init__(self,type_of_emission):
         self.profiles = []
-        self.__is_divided_by_dh = False
-        self.__is_normalized_by_total_mass = False
-        self.__is_height_adjusted = False
-        #self.__is_time_adjusted = False
+        self._is_divided_by_dh = False
+        self._is_normalized_by_total_mass = False
+        self._is_height_adjusted = False
+        #self._is_time_adjusted = False
 
         if (isinstance(type_of_emission, Emission) == False):
             raise TypeError("type_of_emission must be an instance of Emission")
@@ -143,12 +143,12 @@ class EmissionScenario():
         print(f'\n{self.type_of_emission.get_name_of_material()} mass before: \
               {mass_before:.3f} Mt, and after normalisation: {mass_after:.3f} Mt')
         
-        self.__is_normalized_by_total_mass = True
+        self._is_normalized_by_total_mass = True
     
     def plot_profiles(self,*args, **kwargs):
         scale_factor=2000.0#*1000.0
         
-        if (self.__is_divided_by_dh):
+        if (self._is_divided_by_dh):
             scale_factor = scale_factor * 1000.0    #for conviniency
         
         hours=[profile.hour for profile in self.profiles]
@@ -189,12 +189,12 @@ class EmissionScenario():
             return float(plt.rcParams.get("font.size", 10)) + delta
 
     def _emission_rate_units_tex(self):
-        if self.__is_divided_by_dh:
+        if self._is_divided_by_dh:
             return r"Mt\ m^{-1}\ s^{-1}"
         return r"Mt\ s^{-1}"
 
     def _emission_integrated_units_tex(self):
-        if self.__is_divided_by_dh:
+        if self._is_divided_by_dh:
             return r"Mt\ m^{-1}"
         return r"Mt"
   
@@ -409,17 +409,18 @@ class EmissionScenario():
         s = self.__class__.__name__+" "+f'{self.getNumberOfProfiles()} profiles. {self.type_of_emission}. \
         {newline}Start time: {self.getStartDateTime()} End time: {self.getEndDateTime()}. '
         
-        if (self.__is_divided_by_dh):
-            if (self.__is_normalized_by_total_mass):
+        if (self._is_divided_by_dh):
+            if (self._is_normalized_by_total_mass):
                 return s +  f'Units [Mt/m/sec]. Normalized by total mass = {self.getScenarioEmittedMass():.2f} Mt'
             else:
                 return s + 'Units [Mt/m/sec]'
         else:
             return s + 'Units [Mt/sec]'
 
-    def __resample_emissions(self,emissions, durations, regular_dt):
-        t_end = np.sum(durations)
-        original_times = np.concatenate(([0], np.cumsum(durations)))
+    def __resample_emissions(self,emissions, durations, regular_dt, start_offset=0):
+        # start_offset: seconds from the new time grid's origin to the original first profile (>= 0)
+        t_end = start_offset + np.sum(durations)
+        original_times = start_offset + np.concatenate(([0], np.cumsum(durations)))
 
         cumulative_mass = np.zeros_like(original_times, dtype=float)
         for i in range(len(emissions)):
@@ -440,9 +441,11 @@ class EmissionScenario():
 
     def interpolate_time(self, interval_minutes=60):
         StartDateTime = self.getStartDateTime()
-        # Round minutes to nearest 10th
-        start_minute = round(StartDateTime.minute / 10.0) * 10.0
-        StartDateTime_rounded = StartDateTime.replace(minute=0, second=0) + timedelta(minutes=start_minute)
+        # Round the start down to a multiple of 10 minutes. Rounding down (not to nearest) keeps the
+        # grid origin at or before the first profile, so no emitted mass falls before the grid.
+        start_minute = (StartDateTime.minute // 10) * 10
+        StartDateTime_rounded = StartDateTime.replace(minute=start_minute, second=0, microsecond=0)
+        start_offset_sec = (StartDateTime - StartDateTime_rounded).total_seconds()
 
         new_datetime_list = pd.date_range(start=StartDateTime_rounded, end=self.getEndDateTime(), 
                            freq=pd.Timedelta(days=0, hours=0, minutes=interval_minutes))
@@ -468,8 +471,9 @@ class EmissionScenario():
             if (sum(emissions) == 0):
                 continue
             
-            new_emissions = self.__resample_emissions(emissions, old_durations_seconds, interval_minutes * 60)
+            new_emissions = self.__resample_emissions(emissions, old_durations_seconds, interval_minutes * 60, start_offset_sec)
             
+            new_emissions = new_emissions[:temp_interp_solution_emission_scenario.shape[1]]
             # Pad new_emissions with zeros on the right to match the shape of the new emission scenario
             if new_emissions.shape[0] < temp_interp_solution_emission_scenario[i, :].shape[0]:
                 pad_width = temp_interp_solution_emission_scenario[i, :].shape[0] - new_emissions.shape[0]
@@ -491,10 +495,10 @@ class EmissionScenario():
         self.profiles[-1].values *=0
         self.profiles[-1].erup_beg=0
 
-        #self.__is_time_adjusted = True
+        #self._is_time_adjusted = True
 
     def interpolate_height(self,new_height):        
-        #if (self.__is_time_adjusted == False):    
+        #if (self._is_time_adjusted == False):    
         #    raise ValueError('Time must be adjusted before adjusting height')
         
         if not isinstance(new_height, np.ndarray):
@@ -509,10 +513,10 @@ class EmissionScenario():
         for profile in self.profiles:
             profile.interpoloate_height(new_height)
         
-        self.__is_height_adjusted = True
+        self._is_height_adjusted = True
     
     def divide_by_dh(self,dh):        
-        if (self.__is_height_adjusted == False):
+        if (self._is_height_adjusted == False):
             raise ValueError('Height must be adjusted before dividing by dh')
         
         for profile in self.profiles:
@@ -520,7 +524,7 @@ class EmissionScenario():
             profile.is_divided_by_dh = True
             profile.dh = dh
         
-        self.__is_divided_by_dh = True
+        self._is_divided_by_dh = True
 
     def set_values_by_criteria(self, value, time_start=None, time_end=None,
                                height_min_m=None, height_max_m=None,
@@ -792,10 +796,11 @@ class EmissionScenario_Inverted_Eyjafjallajokull(EmissionScenario):
         h = np.array([a for a in np.cumsum(np.concatenate(([json_data['volcano_altitude']], json_data['level_heights'])))])
         #staggerred_h - height of the 'mass' points
         staggerred_h = h[0:-1] + 0.5 * json_data['level_heights']
-        emission_scenario = np.array(json_data['a_posteriori'])
+        # masked cells (no emission) must be zero; np.array() would expose uninitialised data
+        emission_scenario = np.ma.filled(json_data['a_posteriori'], 0.0).astype(np.float64)
         
         emission_scenario *= 1e-9   #emission_scenario in [Mt/m/s] now
-        self.__is_divided_by_dh = True
+        self._is_divided_by_dh = True
         for i in range(emission_scenario.shape[1]):
             self.add_profile(VerticalProfile(staggerred_h,emission_scenario[:,i],years[i],
                                             months[i],days[i],hours[i],3*60*60))

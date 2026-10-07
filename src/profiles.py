@@ -1,6 +1,5 @@
 import numpy as np
-import calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
@@ -18,16 +17,11 @@ class VerticalProfile():
         self.duration_sec = duration_sec
         self.is_divided_by_dh = False
         
-        self.start_datetime = datetime(int(self.year),int(self.month), int(self.day), 
-                                int(self.hour),int((self.hour - int(self.hour))*60.0))
-        
-        if calendar.isleap(self.year):
-            K = 1
-        else:
-            K = 2
+        # Round to the nearest minute: truncating (hour - int(hour))*60 turns 10:10 into 10:09.
+        self.start_datetime = datetime(int(self.year), int(self.month), int(self.day)) + \
+                              timedelta(minutes=int(round(float(self.hour) * 60.0)))
 
-        beg_jul = ((275 * self.month)/9) - K*((self.month+9)/12) + self.day - 30
-        beg_jul = int(beg_jul)
+        beg_jul = datetime(int(self.year), int(self.month), int(self.day)).timetuple().tm_yday
         self.erup_beg = beg_jul * 1000. + self.hour
     
     @staticmethod
